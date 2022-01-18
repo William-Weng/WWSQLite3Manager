@@ -116,22 +116,13 @@ final class ViewController: UIViewController {
     @IBAction func selectData(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Select Fail."); return }
-//
-//        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(key: "height", type: .greaterOrEqual, value: 165)
-//        let orderBy = SQLite3Condition.OrderBy().item(key: "height", type: .ascending).addItem(key: "time", type: .descending)
-//        let limit = SQLite3Condition.Limit().build(count: 3, offset: 5)
-//        let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy, limit: limit)
-//
-//        displayText(sql: result.sql, result: result.array)
+
+        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(key: "height", type: .greaterOrEqual, value: 165)
+        let orderBy = SQLite3Condition.OrderBy().item(key: "height", type: .ascending).addItem(key: "time", type: .descending)
+        let limit = SQLite3Condition.Limit().build(count: 3, offset: 5)
+        let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy, limit: limit)
         
-        let sql = "SELECT * FROM students GROUP BY height, id HAVING height > 179"
-        
-        database.select(tableName: tableName, sql: sql) { statement in
-            let value = statement?._value(at: 0, key: "uyseiryewiyriw", dataType: .TEXT())
-            wwPrint(value)
-        } completion: { isFinished in
-            wwPrint(isFinished)
-        }
+        displayText(sql: result.sql, result: result.array)
     }
 }
 

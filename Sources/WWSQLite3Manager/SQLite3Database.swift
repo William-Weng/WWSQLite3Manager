@@ -54,16 +54,16 @@ public extension SQLite3Database {
     }
     
     /// [執行SELECT SQL](http://jengting.blogspot.com/2014/04/sql-where-having.html)
-    /// - SELECT * FROM students GROUP BY height, id HAVING height > 179
+    /// - SELECT * FROM students GROUP BY height, id HAVING height > 175
     /// - Parameters:
-    ///   - sql: String
+    ///   - sql: [String](http://sqlqna.blogspot.com/2018/03/havingif-else.html)
     ///   - result: ((OpaquePointer?) -> Void)
     ///   - completion: ((Bool) -> Void))
     func select(sql: String, result: ((OpaquePointer?) -> Void), completion: ((Bool) -> Void)) {
         
         var statement: OpaquePointer? = nil
         defer { completion(true); sqlite3_finalize(statement) }
-                
+        
         sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
         while sqlite3_step(statement) == SQLITE_ROW { result(statement) }
     }
