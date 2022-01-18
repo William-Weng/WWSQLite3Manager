@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "WWPrint",
+        "repositoryURL": "https://github.com/William-Weng/WWPrint",
+        "state": {
+          "branch": null,
+          "revision": "e4ad2863717465f224aa676f10a3a7ff1df58f7c",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "WWSQLite3Manager",
+        "repositoryURL": "/Users/iOS/Desktop/WWSQLite3Manager",
+        "state": {
+          "branch": "master",
+          "revision": "066f14c31f8a5d2a5c7f64a778a3c95073a96720",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
