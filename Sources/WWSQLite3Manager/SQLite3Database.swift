@@ -46,11 +46,26 @@ public extension SQLite3Database {
         
         defer { sqlite3_finalize(statement) }
         
-        if (sqlite3_prepare_v2(database, sql.cString(using: .utf8), -1, &statement, nil) == SQLITE_OK) {
+        if (sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil) == SQLITE_OK) {
             if (sqlite3_step(statement) == SQLITE_DONE) { return true }
         }
         
         return false
+    }
+    
+    /// [執行SELECT SQL](http://jengting.blogspot.com/2014/04/sql-where-having.html)
+    /// - SELECT * FROM students GROUP BY height, id HAVING height > 179
+    /// - Parameters:
+    ///   - sql: String
+    ///   - result: ((OpaquePointer?) -> Void)
+    ///   - completion: ((Bool) -> Void))
+    func select(sql: String, result: ((OpaquePointer?) -> Void), completion: ((Bool) -> Void)) {
+        
+        var statement: OpaquePointer? = nil
+        defer { completion(true); sqlite3_finalize(statement) }
+                
+        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        while sqlite3_step(statement) == SQLITE_ROW { result(statement) }
     }
     
     /// [關閉SQLite連線](https://www.sqlite.org/c3ref/close.html)
@@ -201,28 +216,13 @@ public extension SQLite3Database {
             var dict: [String : Any] = [:]
             
             type.scheme()._forEach { (index, paramater, _) in
-                dict[paramater.key] = statement?._value(at: Int32(index), key: paramater.key, dataType: paramater.type) ?? nil
+                dict[paramater.key] = statement?._value(at: Int32(index), dataType: paramater.type) ?? nil
             }
             
             array.append(dict)
         }
         
         return (sql, array)
-    }
-    
-    func select(tableName: String, sql: String, rowStatement: ((OpaquePointer?) -> Void), completion: ((Bool) -> Void)) {
-        
-        var statement: OpaquePointer? = nil
-        
-        defer { sqlite3_finalize(statement) }
-                
-        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
-
-        while sqlite3_step(statement) == SQLITE_ROW {
-            rowStatement(statement)
-        }
-        
-        completion(true)
     }
 }
 
@@ -250,7 +250,7 @@ private extension SQLite3Database {
             var dict: [String : Any] = [:]
             
             type.scheme()._forEach { (index, paramater, _) in
-                dict[paramater.key] = statement?._value(at: Int32(index), key: paramater.key, dataType: paramater.type) ?? nil
+                dict[paramater.key] = statement?._value(at: Int32(index), dataType: paramater.type) ?? nil
             }
             
             array.append(dict)
