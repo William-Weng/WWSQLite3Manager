@@ -119,6 +119,7 @@ final class ViewController: UIViewController {
         
         let condition = SQLite3Condition.Where().like(key: "name", condition: "William_1%").andCompare(key: "height", type: .greaterOrEqual, value: 165)
         let orderBy = SQLite3Condition.OrderBy().item(key: "height", type: .ascending).addItem(key: "time", type: .descending)
+        let limit = SQLite3Condition.Limit().bui
         let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy)
         
         displayText(sql: result.sql, result: result.array)

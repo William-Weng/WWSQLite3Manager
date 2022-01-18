@@ -60,16 +60,4 @@ open class SQLite3Condition: NSObject {
     }
 }
 
-extension SQLite3Condition.Limit {
-    
-    /// 產生數量取得條件
-    /// - LIMIT 3 OFFSET 2
-    /// - Parameters:
-    ///   - count: Int
-    ///   - offset: Int
-    /// - Returns: self
-    func build(count: Int, offset: Int = 0) -> Self {
-        items = "LIMIT \(count) OFFSET \(offset)"
-        return self
-    }
-}
+
