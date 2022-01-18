@@ -193,9 +193,9 @@ public extension SQLite3Database {
         if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         
         defer { sqlite3_finalize(statement) }
-        
-        sqlite3_prepare_v2(database, sql.cString(using: .utf8), -1, &statement, nil)
-        
+                
+        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+
         while sqlite3_step(statement) == SQLITE_ROW {
             
             var dict: [String : Any] = [:]

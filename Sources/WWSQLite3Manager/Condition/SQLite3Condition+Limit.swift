@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  SQLite3Condition+Limit.swift
+//  WWSQLite3Manager
 //
 //  Created by iOS on 2022/1/18.
 //
