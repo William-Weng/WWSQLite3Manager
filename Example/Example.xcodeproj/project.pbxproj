@@ -413,7 +413,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "file:///Users/ios/Desktop/WWSQLite3Manager";
 			requirement = {
-				branch = main;
+				branch = Test;
 				kind = branch;
 			};
 		};

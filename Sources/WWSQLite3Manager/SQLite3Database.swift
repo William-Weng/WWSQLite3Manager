@@ -209,6 +209,21 @@ public extension SQLite3Database {
         
         return (sql, array)
     }
+    
+    func select(tableName: String, sql: String, rowStatement: ((OpaquePointer?) -> Void), completion: ((Bool) -> Void)) {
+        
+        var statement: OpaquePointer? = nil
+        
+        defer { sqlite3_finalize(statement) }
+                
+        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+
+        while sqlite3_step(statement) == SQLITE_ROW {
+            rowStatement(statement)
+        }
+        
+        completion(true)
+    }
 }
 
 // MARK: - 小工具
