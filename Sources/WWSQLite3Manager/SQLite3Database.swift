@@ -93,10 +93,10 @@ public extension SQLite3Database {
     /// - Returns: ExecuteResult
     func create(tableName: String, type: SQLite3SchemeDelegate.Type, isOverwrite: Bool = false) -> ExecuteResult {
         
-        let fields = type.scheme().map { (key, type) in return "\(key) \(type.toSQL())" }.joined(separator: ", ")
+        let fields = type.structure().map { (key, type) in return "\(key) \(type.toSQL())" }.joined(separator: ", ")
         var sql: String = (!isOverwrite) ? "CREATE TABLE \(tableName) (\(fields)" : "CREATE TABLE IF NOT EXISTS \(tableName) (\(fields)"
         
-        if let primaryKey = type.primaryKey(type.scheme().first?.key) { sql += ", \(primaryKey)" }
+        if let primaryKey = type.primaryKey(type.structure().first?.key) { sql += ", \(primaryKey)" }
         sql += ")"
         
         let isSuccess = execute(sql: sql)
@@ -197,7 +197,7 @@ public extension SQLite3Database {
     /// - Returns: SelectResult
     func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
         
-        let fields = type.scheme().map { $0.key }.joined(separator: ", ")
+        let fields = type.structure().map { $0.key }.joined(separator: ", ")
         
         var sql = "SELECT \(fields) FROM \(tableName)"
         var statement: OpaquePointer? = nil
@@ -215,7 +215,7 @@ public extension SQLite3Database {
             
             var dict: [String : Any] = [:]
             
-            type.scheme()._forEach { (index, paramater, _) in
+            type.structure()._forEach { (index, paramater, _) in
                 dict[paramater.key] = statement?._value(at: Int32(index), dataType: paramater.type) ?? nil
             }
             
@@ -249,7 +249,7 @@ private extension SQLite3Database {
             
             var dict: [String : Any] = [:]
             
-            type.scheme()._forEach { (index, paramater, _) in
+            type.structure()._forEach { (index, paramater, _) in
                 dict[paramater.key] = statement?._value(at: Int32(index), dataType: paramater.type) ?? nil
             }
             

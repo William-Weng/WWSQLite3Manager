@@ -33,7 +33,7 @@ open class SQLite3TableSchemeInfomation: Codable {
 extension SQLite3TableSchemeInfomation: SQLite3SchemeDelegate {
     
     /// SQL欄位順序結構 => CREATE時使用
-    public static func scheme() -> [(key: String, type: SQLite3Condition.DataType)] {
+    public static func structure() -> [(key: String, type: SQLite3Condition.DataType)] {
         
         let keyTypes: [(key: String, type: SQLite3Condition.DataType)] = [
             (key: "cid", type: .INTEGER()),

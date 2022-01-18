@@ -134,8 +134,6 @@ private extension ViewController {
     func displayText(sql: String?, result: Any) {
         sqlTextView.text = sql
         resultTextView.text = "\(result)"
-        
-        wwPrint(result)
     }
     
     /// 測試用數據

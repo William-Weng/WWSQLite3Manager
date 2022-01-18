@@ -10,7 +10,7 @@ import UIKit
 public protocol SQLite3SchemeDelegate {
     
     /// 欄位順序
-    static func scheme() -> [(key: String, type: SQLite3Condition.DataType)]
+    static func structure() -> [(key: String, type: SQLite3Condition.DataType)]
     
     /// 主Key
     static func primaryKey(_ key: String?) -> String?
