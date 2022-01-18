@@ -178,8 +178,9 @@ public extension SQLite3Database {
     ///   - type: SQLite3SchemeDelegate.Type
     ///   - whereConditions: SQLCondition.Where?
     ///   - orderByConditions: SQLite3Condition.OrderBy?
+    ///   - limit: SQLite3Condition.Limit?
     /// - Returns: SelectResult
-    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil) -> SelectResult {
+    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
         
         let fields = type.scheme().map { $0.key }.joined(separator: ", ")
         
@@ -189,6 +190,7 @@ public extension SQLite3Database {
         
         if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
         if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
+        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         
         defer { sqlite3_finalize(statement) }
         

@@ -12,10 +12,10 @@
       },
       {
         "package": "WWSQLite3Manager",
-        "repositoryURL": "https://github.com/William-Weng/WWSQLite3Manager.git",
+        "repositoryURL": "/Users/ios/Desktop/WWSQLite3Manager",
         "state": {
           "branch": "main",
-          "revision": "54bb005237d0704b5bbae5d45d2bd54233fceb4e",
+          "revision": "1f83a022bca1731416c6c3c462f811667dc84ca3",
           "version": null
         }
       }

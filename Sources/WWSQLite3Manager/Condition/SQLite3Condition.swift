@@ -53,4 +53,23 @@ open class SQLite3Condition: NSObject {
     public class OrderBy: NSObject {
         var items: String = ""
     }
+    
+    /// [數量取得條件](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
+    public class Limit: NSObject {
+        var items: String = ""
+    }
+}
+
+extension SQLite3Condition.Limit {
+    
+    /// 產生數量取得條件
+    /// - LIMIT 3 OFFSET 2
+    /// - Parameters:
+    ///   - count: Int
+    ///   - offset: Int
+    /// - Returns: self
+    func build(count: Int, offset: Int = 0) -> Self {
+        items = "LIMIT \(count) OFFSET \(offset)"
+        return self
+    }
 }
