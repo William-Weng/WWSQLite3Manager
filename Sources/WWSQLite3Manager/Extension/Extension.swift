@@ -8,6 +8,26 @@
 import Foundation
 import SQLite3
 
+public extension OpaquePointer {
+    
+    /// 取得資料庫的數據
+    /// - Parameters:
+    ///   - column: 第幾列？
+    ///   - dataType: 類型
+    /// - Returns: Any?
+    func _value(at column: Int32, dataType: SQLite3Condition.DataType) -> Any? {
+        
+        switch dataType {
+        case .INTEGER: return self._Int32(at: column)
+        case .REAL: return self._Double(at: column)
+        case .BLOB: return self._Blob(at: column)
+        case .TEXT: return self._String(at: column)
+        case .NUMERIC: return self._String(at: column)
+        case .TIMESTAMP: return self._String(at: column)
+        }
+    }
+}
+
 // MARK: - OpaquePointer (class function)
 extension OpaquePointer {
     
@@ -46,24 +66,6 @@ extension OpaquePointer {
         }
         
         return Data(bytes: bytes, count: count)
-    }
-    
-    /// 取得資料庫的數據
-    /// - Parameters:
-    ///   - column: 第幾列？
-    ///   - key: 欄位
-    ///   - dataType: 類型
-    /// - Returns: Any?
-    func _value(at column: Int32, key: String, dataType: SQLite3Condition.DataType) -> Any? {
-        
-        switch dataType {
-        case .INTEGER: return self._Int32(at: column)
-        case .REAL: return self._Double(at: column)
-        case .BLOB: return self._Blob(at: column)
-        case .TEXT: return self._String(at: column)
-        case .NUMERIC: return self._String(at: column)
-        case .TIMESTAMP: return self._String(at: column)
-        }
     }
 }
 

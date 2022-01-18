@@ -116,7 +116,7 @@ final class ViewController: UIViewController {
     @IBAction func selectData(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Select Fail."); return }
-        
+
         let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(key: "height", type: .greaterOrEqual, value: 165)
         let orderBy = SQLite3Condition.OrderBy().item(key: "height", type: .ascending).addItem(key: "time", type: .descending)
         let limit = SQLite3Condition.Limit().build(count: 3, offset: 5)
@@ -134,6 +134,8 @@ private extension ViewController {
     func displayText(sql: String?, result: Any) {
         sqlTextView.text = sql
         resultTextView.text = "\(result)"
+        
+        wwPrint(result)
     }
     
     /// 測試用數據
