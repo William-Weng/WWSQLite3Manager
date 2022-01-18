@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "WWPrint",
-        "repositoryURL": "https://github.com/William-Weng/WWPrint",
+        "repositoryURL": "https://github.com/William-Weng/WWPrint.git",
         "state": {
           "branch": null,
           "revision": "e4ad2863717465f224aa676f10a3a7ff1df58f7c",
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/William-Weng/WWSQLite3Manager.git",
         "state": {
           "branch": null,
-          "revision": "ff91effc26d0b33d94fe943816d6d8c0eec5a379",
-          "version": "1.1.0"
+          "revision": "e57d23056f49a45935130ee7f9523694b6f18bff",
+          "version": "1.2.0"
         }
       }
     ]
