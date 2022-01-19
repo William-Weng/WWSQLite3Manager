@@ -31,7 +31,7 @@ final class Student: Codable {
 // MARK: - SQLite3SchemeDelegate
 extension Student: SQLite3SchemeDelegate {
     
-    static func scheme() -> [(key: String, type: SQLite3Condition.DataType)] {
+    static func structure() -> [(key: String, type: SQLite3Condition.DataType)] {
         
         let keyTypes: [(key: String, type: SQLite3Condition.DataType)] = [
             (key: "id", type: .INTEGER()),
