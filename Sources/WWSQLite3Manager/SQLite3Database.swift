@@ -2,7 +2,7 @@
 //  SQLite3Database.swift
 //  WWSQLite3Manager
 //
-//  Created by iOS on 2022/1/13.
+//  Created by William.Weng on 2022/1/13.
 //
 
 import Foundation
@@ -19,6 +19,7 @@ public struct SQLite3Database {
     
     public typealias ExecuteResult = (sql: String, isSussess: Bool)
     public typealias SelectResult = (sql: String, array: [[String: Any]])
+    public typealias SelectDistinctResult = (sql: String, array: [Any])
     public typealias InsertItem = (key: String, value: Any)
     
     public let fileURL: URL
@@ -220,6 +221,77 @@ public extension SQLite3Database {
             }
             
             array.append(dict)
+        }
+        
+        return (sql, array)
+    }
+    
+    /// [搜尋欄位數量](https://www.fooish.com/sql/count-function.html)
+    /// - Parameters:
+    ///   - tableName: String
+    ///   - function: SQLite3Function.Count.Function
+    ///   - whereConditions: SQLite3Condition.Where?
+    ///   - orderByConditions: SQLite3Condition.OrderBy?
+    ///   - limitConditions: SQLite3Condition.Limit?
+    /// - Returns: SelectResult?
+    func selectCount(tableName: String, function: SQLite3Function.Count.Function = .all, where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
+        
+        var sql = "SELECT \(function.sql()) FROM \(tableName)"
+        var statement: OpaquePointer? = nil
+        var array: [[String : Any]] = []
+        
+        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
+        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
+        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
+        
+        defer { sqlite3_finalize(statement) }
+        
+        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        
+        while sqlite3_step(statement) == SQLITE_ROW {
+            
+            var dict: [String : Any] = [:]
+            
+            switch function {
+            case .all: dict["Count"] = statement?._value(at: 0, dataType: .INTEGER())
+            case .fields(let _fields), .distinct(let _fields):
+                
+                for (index, field) in _fields.enumerated() {
+                    let aliasName = function.aliasName(with: field)
+                    dict[aliasName] = statement?._value(at: Int32(index), dataType: .INTEGER()) ?? nil
+                }
+            }
+            
+            array.append(dict)
+        }
+        
+        return (sql, array)
+    }
+    
+    /// [搜尋未重複的欄位資料](https://www.1keydata.com/tw/sql/sqldistinct.html)
+    /// - Parameters:
+    ///   - tableName: String
+    ///   - info: (key: String, type: SQLite3Condition.DataType)
+    ///   - whereConditions: SQLite3Condition.Where?
+    ///   - orderByConditions: SQLite3Condition.OrderBy?
+    ///   - limitConditions: SQLite3Condition.Limit?
+    /// - Returns: SelectResult?
+    func selectDistinct(tableName: String, info: (key: String, type: SQLite3Condition.DataType), where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectDistinctResult {
+        
+        var sql = "SELECT DISTINCT(\(info.key)) FROM \(tableName)"
+        var statement: OpaquePointer? = nil
+        var array: [Any] = []
+        
+        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
+        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
+        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
+        
+        defer { sqlite3_finalize(statement) }
+        
+        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        
+        while sqlite3_step(statement) == SQLITE_ROW {
+            if let value = statement?._value(at: 0, dataType: info.type) { array.append(value) }
         }
         
         return (sql, array)

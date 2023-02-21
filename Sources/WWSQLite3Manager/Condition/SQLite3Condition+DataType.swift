@@ -2,7 +2,7 @@
 //  SQLite3Condition.DataType.swift
 //  WWSQLite3Manager
 //
-//  Created by iOS on 2022/1/17.
+//  Created by William.Weng on 2022/1/17.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  SQLite3Condition+Limit.swift
 //  WWSQLite3Manager
 //
-//  Created by iOS on 2022/1/18.
+//  Created by William.Weng on 2022/1/18.
 //
 
 import Foundation
