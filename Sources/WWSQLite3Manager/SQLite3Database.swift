@@ -4,6 +4,7 @@
 //
 //  Created by William.Weng on 2022/1/13.
 //
+/// SELECT word, count(word) as Count FROM English GROUP BY word HAVING Count > 3 ORDER BY Count DESC LIMIT 0, 10
 
 import Foundation
 import SQLite3
@@ -192,11 +193,13 @@ public extension SQLite3Database {
     /// - Parameters:
     ///   - tableName: String
     ///   - type: SQLite3SchemeDelegate.Type
-    ///   - whereConditions: SQLCondition.Where?
-    ///   - orderByConditions: SQLite3Condition.OrderBy?
-    ///   - limit: SQLite3Condition.Limit?
+    ///   - whereConditions: Where語句
+    ///   - groupByConditions: GroupBy語句
+    ///   - havingConditions: HAVING語句
+    ///   - orderByConditions: OrderBy語句
+    ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
+    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
         
         let fields = type.structure().map { $0.key }.joined(separator: ", ")
         
@@ -205,6 +208,8 @@ public extension SQLite3Database {
         var array: [[String : Any]] = []
         
         if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
+        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
+        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
         if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
         if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         
@@ -231,10 +236,12 @@ public extension SQLite3Database {
     ///   - tableName: [資料庫](https://www.1keydata.com/tw/sql/sqldistinct.html)
     ///   - functions: [常用函數]
     ///   - whereConditions: Where語句
+    ///   - groupByConditions: GroupBy語句
+    ///   - havingConditions: HAVING語句
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: SQLite3Condition.Where? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
+    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
         
         var sql = "SELECT * FROM \(tableName)"
         
@@ -247,6 +254,8 @@ public extension SQLite3Database {
         var array: [[String : Any]] = []
         
         if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
+        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
+        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
         if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
         if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         

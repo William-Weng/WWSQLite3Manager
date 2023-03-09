@@ -11,7 +11,7 @@ import UIKit
 open class SQLite3Condition: NSObject {
     
     public typealias Attribute = (isNotNull: Bool, isNoCase: Bool, isUnique: Bool)
-
+    
     /// 排序 => 小到大 / 大到小
     public enum OrderByType: String {
         case ascending = "ASC"
@@ -25,6 +25,7 @@ open class SQLite3Condition: NSObject {
         case greaterOrEqual = ">="
         case lessThan = "<"
         case lessOrEqual = "<="
+        case notEqual = "!="
     }
     
     /// [SQLite3的資料類型](https://www.sqlite.org/datatype3.html)
@@ -48,6 +49,14 @@ open class SQLite3Condition: NSObject {
         private let isNull = "IS NULL"
         private let isNotNull = "IS NOT NULL"
     }
+    
+    /// [分組條件](https://blog.csdn.net/HD243608836/article/details/88813269)
+    public class GroupBy: NSObject {
+        var items: String = ""
+    }
+    
+    /// [篩選後的過濾條件](https://www.mysql.tw/2014/06/sqlwherehaving.html)
+    public class Having: SQLite3Condition.Where {}
     
     /// [排序條件](https://ithelp.ithome.com.tw/articles/10217026)
     public class OrderBy: NSObject {

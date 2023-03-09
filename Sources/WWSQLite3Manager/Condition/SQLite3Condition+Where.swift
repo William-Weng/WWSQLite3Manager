@@ -27,6 +27,12 @@ public extension SQLite3Condition.Where {
         self.items += " OR \(combineCompareString(key: key, type: type, value: value))"
         return self
     }
+    
+    /// NOT id >= 3
+    func notCompare(key: String, type: SQLite3Condition.CompareType, value: Any) -> Self {
+        self.items += " NOT \(combineCompareString(key: key, type: type, value: value))"
+        return self
+    }
 }
 
 // MARK: - BETWEEN AND
@@ -38,9 +44,21 @@ public extension SQLite3Condition.Where {
         return self
     }
     
-    /// height BETWEEN 170 AND 180
+    /// and height BETWEEN 170 AND 180
     func andBetween(key: String, from fromValue: Any, to toValue: Any) -> Self {
-        self.items += "AND \(combineBetweenString(key: key, from: fromValue, to: toValue))"
+        self.items += " AND \(combineBetweenString(key: key, from: fromValue, to: toValue))"
+        return self
+    }
+    
+    /// or height BETWEEN 170 AND 180
+    func orBetween(key: String, from fromValue: Any, to toValue: Any) -> Self {
+        self.items += " OR \(combineBetweenString(key: key, from: fromValue, to: toValue))"
+        return self
+    }
+    
+    /// not height BETWEEN 170 AND 180
+    func notBetween(key: String, from fromValue: Any, to toValue: Any) -> Self {
+        self.items += " NOT \(combineBetweenString(key: key, from: fromValue, to: toValue))"
         return self
     }
 }
@@ -135,7 +153,7 @@ private extension SQLite3Condition.Where {
     ///   - value: 數值
     /// - Returns: String
     func combineCompareString(key: String, type: SQLite3Condition.CompareType, value: Any) -> String {
-        let sql = "\(key) \(type.rawValue) '\(value)'"
+        let sql = "\(key) \(type.rawValue) \(value)"
         return sql
     }
     
