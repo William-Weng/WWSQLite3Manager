@@ -66,7 +66,7 @@ final class ViewController: UIViewController {
     /// 連接資料庫
     @IBAction func connentDatabase(_ sender: UIBarButtonItem) {
         
-        let result = WWSQLite3Manager.shared.connent(with: databaseName)
+        let result = WWSQLite3Manager.shared.connent(for: .documents, filename: databaseName)
         
         switch result {
         case .failure(let error):
