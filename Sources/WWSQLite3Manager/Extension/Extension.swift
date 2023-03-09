@@ -92,14 +92,14 @@ extension Array {
 // MARK: - FileManager (class function)
 extension FileManager {
     
+    /// User的「暫存」資料夾
+    /// - => ~/tmp/
+    /// - Returns: URL
+    func _temporaryDirectory() -> URL { return self.temporaryDirectory }
+    
     /// [取得User的資料夾](https://cdfq152313.github.io/post/2016-10-11/)
     /// - UIFileSharingEnabled = YES => iOS設置iTunes文件共享
     /// - Parameter directory: User的資料夾名稱
     /// - Returns: [URL]
     func _userDirectory(for directory: FileManager.SearchPathDirectory) -> [URL] { return Self.default.urls(for: directory, in: .userDomainMask) }
-
-    /// User的「文件」資料夾URL
-    /// - => ~/Documents (UIFileSharingEnabled)
-    /// - Returns: URL?
-    func _documentDirectory() -> URL? { return self._userDirectory(for: .documentDirectory).first }
 }
