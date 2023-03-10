@@ -151,9 +151,10 @@ private extension SQLite3Condition.Where {
     ///   - type: SQLite3Condition.CompareType
     ///   - key: 欄位
     ///   - value: 數值
+    ///   - isNumber: 數字 / 非數字
     /// - Returns: String
-    func combineCompareString(key: String, type: SQLite3Condition.CompareType, value: Any) -> String {
-        let sql = "\(key) \(type.rawValue) \(value)"
+    func combineCompareString(key: String, type: SQLite3Condition.CompareType, value: Any, isNumber: Bool = false) -> String {
+        let sql = "\(key) \(type.rawValue) \(fixSqlValue(value, isNumber: isNumber))"
         return sql
     }
     
@@ -162,9 +163,10 @@ private extension SQLite3Condition.Where {
     ///   - key: 欄位
     ///   - fromValue: 數值最小值
     ///   - toValue: 數值最大值
+    ///   - isNumber: 數字 / 非數字
     /// - Returns: String
-    func combineBetweenString(key: String, from fromValue: Any, to toValue: Any) -> String {
-        let sql = "\(key) BETWEEN \(fromValue) AND \(toValue)"
+    func combineBetweenString(key: String, from fromValue: Any, to toValue: Any, isNumber: Bool = false) -> String {
+        let sql = "\(key) BETWEEN \(fixSqlValue(fromValue, isNumber: isNumber)) AND \(fixSqlValue(toValue, isNumber: isNumber))"
         return sql
     }
     
@@ -188,9 +190,10 @@ private extension SQLite3Condition.Where {
     /// - Parameters:
     ///   - key: String
     ///   - condition: String
+    ///   - isNumber: 數字 / 非數字
     /// - Returns: String
-    func combineLikeString(key: String, condition: String) -> String {
-        let sql = "\(key) LIKE '\(condition)'"
+    func combineLikeString(key: String, condition: String, isNumber: Bool = false) -> String {
+        let sql = "\(key) LIKE \(fixSqlValue(condition, isNumber: isNumber))"
         return sql
     }
     
@@ -198,9 +201,10 @@ private extension SQLite3Condition.Where {
     /// - Parameters:
     ///   - key: String
     ///   - condition: String
+    ///   - isNumber: 數字 / 非數字
     /// - Returns: String
-    func combineNotLikeString(key: String, condition: String) -> String {
-        let sql = "\(key) NOT LIKE '\(condition)'"
+    func combineNotLikeString(key: String, condition: String, isNumber: Bool = false) -> String {
+        let sql = "\(key) NOT LIKE \(fixSqlValue(condition, isNumber: isNumber))"
         return sql
     }
     
@@ -208,10 +212,12 @@ private extension SQLite3Condition.Where {
     /// - Parameters:
     ///   - key: String
     ///   - condition: String
+    ///   - values: [Any]
+    ///   - isNumber: 數字 / 非數字
     /// - Returns: String
-    func combineInString(key: String, values: [Any]) -> String {
+    func combineInString(key: String, values: [Any], isNumber: Bool = false) -> String {
         
-        let items = values.map { "'\($0)'" }.joined(separator: ", ")
+        let items = values.map { "\(fixSqlValue($0, isNumber: isNumber))" }.joined(separator: ", ")
         let sql = "\(key) IN (\(items))"
         
         return sql
@@ -221,12 +227,24 @@ private extension SQLite3Condition.Where {
     /// - Parameters:
     ///   - key: String
     ///   - condition: String
+    ///   - values: [Any]
+    ///   - isNumber: 數字 / 非數字
     /// - Returns: String
-    func combineNotInString(key: String, values: [Any]) -> String {
+    func combineNotInString(key: String, values: [Any], isNumber: Bool = false) -> String {
         
-        let items = values.map { "'\($0)'" }.joined(separator: ", ")
+        let items = values.map { "\(fixSqlValue($0, isNumber: isNumber))" }.joined(separator: ", ")
         let sql = "\(key) NOT IN (\(items))"
         
         return sql
+    }
+    
+    /// 修正SQL數值 (數字: 0.8787 / 非數字: '0.8787' )
+    /// - Parameters:
+    ///   - value: Any
+    ///   - isNumber: Bool
+    /// - Returns: String
+    func fixSqlValue(_ value: Any, isNumber: Bool) -> String {
+        if (!isNumber) { return "'\(value)'" }
+        return "\(value)"
     }
 }
