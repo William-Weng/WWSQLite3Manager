@@ -1,3 +1,0 @@
-module SQLite3 {
-    header "sqlite3.h"
-}

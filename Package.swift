@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .target(name: "WWSQLite3Manager", dependencies: [], linkerSettings: [ .linkedLibrary("sqlite3")]),
+        .target(name: "WWSQLite3Manager", dependencies: []),
     ],
     swiftLanguageVersions: [
         .v5

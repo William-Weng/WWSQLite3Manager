@@ -1,25 +1,23 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "WWPrint",
-        "repositoryURL": "https://github.com/William-Weng/WWPrint.git",
-        "state": {
-          "branch": null,
-          "revision": "e4ad2863717465f224aa676f10a3a7ff1df58f7c",
-          "version": "1.0.0"
-        }
-      },
-      {
-        "package": "WWSQLite3Manager",
-        "repositoryURL": "https://github.com/William-Weng/WWSQLite3Manager.git",
-        "state": {
-          "branch": null,
-          "revision": "e57d23056f49a45935130ee7f9523694b6f18bff",
-          "version": "1.2.0"
-        }
+  "pins" : [
+    {
+      "identity" : "wwprint",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/William-Weng/WWPrint.git",
+      "state" : {
+        "revision" : "6b70fabaa1dbeac95b224384819e231a1220900a",
+        "version" : "1.2.0"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "wwsqlite3manager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/William-Weng/WWSQLite3Manager.git",
+      "state" : {
+        "revision" : "adca1aa1bbde4fd861e7314fc940d9f17a560aa1",
+        "version" : "1.4.3"
+      }
+    }
+  ],
+  "version" : 2
 }
