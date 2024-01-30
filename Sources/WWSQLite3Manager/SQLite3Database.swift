@@ -99,14 +99,17 @@ public extension SQLite3Database {
     /// - Parameters:
     ///   - tableName: [String](https://www.1keydata.com/tw/sql/sqlcreate.html)
     ///   - type: [SQLite3SchemeDelegate.Type](https://www.runoob.com/sql/sql-syntax.html)
+    ///   - primaryKeys: [複合主鍵](https://blog.csdn.net/smartfox80/article/details/44619749)
     ///   - isOverwrite: [Bool - 是否要覆蓋過去？](https://www.w3school.com.cn/sql/sql_syntax.asp)
     /// - Returns: ExecuteResult
-    func create(tableName: String, type: SQLite3SchemeDelegate.Type, isOverwrite: Bool = false) -> ExecuteResult {
+    func create(tableName: String, type: SQLite3SchemeDelegate.Type, primaryKeys: [String?] = [], isOverwrite: Bool = false) -> ExecuteResult {
         
         let fields = type.structure().map { (key, type) in return "\(key) \(type.toSQL())" }.joined(separator: ", ")
+        let keys = primaryKeys.isEmpty ? [type.structure().first?.key] : primaryKeys
+
         var sql: String = (!isOverwrite) ? "CREATE TABLE \(tableName) (\(fields)" : "CREATE TABLE IF NOT EXISTS \(tableName) (\(fields)"
         
-        if let primaryKey = type.primaryKey(type.structure().first?.key) { sql += ", \(primaryKey)" }
+        if let primaryKey = type.primaryKeys(keys) { sql += ", \(primaryKey)" }
         sql += ")"
         
         let isSuccess = execute(sql: sql)

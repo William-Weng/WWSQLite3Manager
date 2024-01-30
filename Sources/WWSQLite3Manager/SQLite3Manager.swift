@@ -47,7 +47,11 @@ public extension WWSQLite3Manager {
             return url
         }
     }
-            
+}
+
+// MARK: - 公開function
+public extension WWSQLite3Manager {
+    
     /// [建立SQLite連線](https://itisjoe.gitbooks.io/swiftgo/content/database/sqlite.html)
     /// - Parameter fileURL: [URL?](https://gist.github.com/yossan/91079df35609892722f3102246493394)
     /// - Returns: [Result<SQLiteConnect, Error>](https://github.com/itisjoe/swiftgo_files/blob/master/database/sqlite/ExSQLite/ExSQLite/SQLiteConnect.swift)
