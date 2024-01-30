@@ -9,7 +9,7 @@ import Foundation
 import SQLite3
 
 // MARK: - OpaquePointer (public function)
-extension OpaquePointer {
+public extension OpaquePointer {
     
     /// 取得資料庫的數據
     /// - Parameters:
