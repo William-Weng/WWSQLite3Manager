@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/William-Weng/WWPrint.git",
       "state" : {
-        "revision" : "6b70fabaa1dbeac95b224384819e231a1220900a",
-        "version" : "1.2.0"
+        "revision" : "0acf1057863faea81c3ded2057c21b09c3435435",
+        "version" : "1.3.0"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/William-Weng/WWSQLite3Manager.git",
       "state" : {
-        "revision" : "adca1aa1bbde4fd861e7314fc940d9f17a560aa1",
-        "version" : "1.4.3"
+        "revision" : "b151fa0deef3bfa63e0c7dc35d97402d7fcc8e1a",
+        "version" : "1.4.4"
       }
     }
   ],

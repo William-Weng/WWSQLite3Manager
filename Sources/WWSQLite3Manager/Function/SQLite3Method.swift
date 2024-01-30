@@ -7,10 +7,14 @@
 
 import Foundation
 
-open class SQLite3Method: NSObject {
+// MARK: - 常用的SQLite3函數
+open class SQLite3Method: NSObject {}
+
+// MARK: - 常用的Select函數
+public extension SQLite3Method {
     
     // MARK: - SQL的常用函數 - Select
-    public enum SelectFunction {
+    enum SelectFunction {
         
         case `default`(_ key: String, _ type: SQLite3Condition.DataType)            // 原始的一般欄位
         case count(_ key: String? = nil, _ type: SQLite3Condition.DataType)         // 總數量

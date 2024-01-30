@@ -7,8 +7,11 @@
 
 import Foundation
 
+// MARK: - 常數
+final class Constant {}
+
 // MARK: - enum
-final class Constant {
+extension Constant {
     
     /// 自訂錯誤
     enum MyError: Error, LocalizedError {

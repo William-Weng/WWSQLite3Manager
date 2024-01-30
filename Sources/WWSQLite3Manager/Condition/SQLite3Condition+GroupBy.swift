@@ -1,6 +1,6 @@
 //
 //  SQLite3Condition+GroupBy.swift
-//  
+//  WWSQLite3Manager
 //
 //  Created by William.Weng on 2023/3/9.
 //

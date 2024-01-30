@@ -8,7 +8,8 @@
 import Foundation
 import SQLite3
 
-public extension OpaquePointer {
+// MARK: - OpaquePointer (public function)
+extension OpaquePointer {
     
     /// 取得資料庫的數據
     /// - Parameters:
@@ -28,7 +29,7 @@ public extension OpaquePointer {
     }
 }
 
-// MARK: - OpaquePointer (class function)
+// MARK: - OpaquePointer (function)
 extension OpaquePointer {
     
     /// SQLite指標 => Int32
@@ -69,14 +70,14 @@ extension OpaquePointer {
     }
 }
 
-// MARK: - Collection (override class function)
+// MARK: - Collection (override function)
 extension Collection {
 
     /// [為Array加上安全取值特性 => nil](https://stackoverflow.com/questions/25329186/safe-bounds-checked-array-lookup-in-swift-through-optional-bindings)
     subscript(safe index: Index) -> Element? { return indices.contains(index) ? self[index] : nil }
 }
 
-// MARK: - Array (class function)
+// MARK: - Array (function)
 extension Array {
     
     /// [仿javaScript的forEach()](https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach)
@@ -89,7 +90,7 @@ extension Array {
     }
 }
 
-// MARK: - FileManager (class function)
+// MARK: - FileManager (function)
 extension FileManager {
     
     /// User的「暫存」資料夾

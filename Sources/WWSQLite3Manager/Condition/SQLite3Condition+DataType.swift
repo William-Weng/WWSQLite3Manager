@@ -48,7 +48,7 @@ private extension SQLite3Condition.DataType {
     ///   - attribute: SQLite3Condition.Attribute
     ///   - defaultValue: T?
     /// - Returns: String
-    private func sqlStringMaker<T>(attribute: SQLite3Condition.Attribute, defaultValue: T?) -> String {
+    func sqlStringMaker<T>(attribute: SQLite3Condition.Attribute, defaultValue: T?) -> String {
         
         var sql = self.toString()
         
@@ -64,7 +64,7 @@ private extension SQLite3Condition.DataType {
     /// - Parameters:
     ///   - defaultValue: String
     /// - Returns: String
-    private func timestampString(defaultValue: String?) -> String {
+    func timestampString(defaultValue: String?) -> String {
         
         var sql = self.toString()
         if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }

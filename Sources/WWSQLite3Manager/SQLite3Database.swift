@@ -11,20 +11,28 @@ import SQLite3
 
 // MARK: - 執行資料庫的功能
 public struct SQLite3Database {
+        
+    public let fileURL: URL
+    public let database: OpaquePointer
+}
+
+// MARK: - typealias
+public extension SQLite3Database {
     
-    public enum TransactionType: String {
+    typealias ExecuteResult = (sql: String, isSussess: Bool)
+    typealias SelectResult = (sql: String, array: [[String: Any]])
+    typealias SelectDistinctResult = (sql: String, array: [Any])
+    typealias InsertItem = (key: String, value: Any)
+}
+
+// MARK: - enum
+public extension SQLite3Database {
+    
+    enum TransactionType: String {
         case begin = "BEGIN"
         case commit = "COMMIT"
         case rollback = "ROLLBACK"
     }
-    
-    public typealias ExecuteResult = (sql: String, isSussess: Bool)
-    public typealias SelectResult = (sql: String, array: [[String: Any]])
-    public typealias SelectDistinctResult = (sql: String, array: [Any])
-    public typealias InsertItem = (key: String, value: Any)
-    
-    public let fileURL: URL
-    public let database: OpaquePointer
 }
 
 // MARK: - 直讀SQL
