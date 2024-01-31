@@ -74,6 +74,6 @@ public extension SQLite3Condition {
         case BLOB(attribute: Attribute = (false, false, false), defaultValue: String? = nil)
         case REAL(attribute: Attribute = (false, false, false), defaultValue: Double? = nil)
         case NUMERIC(attribute: Attribute = (false, false, false), defaultValue: Double? = nil)
-        case TIMESTAMP(defaultValue: String = "CURRENT_TIMESTAMP")
+        case TIMESTAMP(defaultValue: String? = "CURRENT_TIMESTAMP")
     }
 }
