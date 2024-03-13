@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .target(name: "WWSQLite3Manager", dependencies: []),
+        .target(name: "WWSQLite3Manager", resources: [.copy("Privacy")]),
     ],
     swiftLanguageVersions: [
         .v5
