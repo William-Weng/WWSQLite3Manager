@@ -2,17 +2,37 @@
 
 [![Swift-5.6](https://img.shields.io/badge/Swift-5.6-orange.svg?style=flat)](https://developer.apple.com/swift/) [![iOS-14.0](https://img.shields.io/badge/iOS-14.0-pink.svg?style=flat)](https://developer.apple.com/swift/) ![](https://img.shields.io/github/v/tag/William-Weng/WWSQLite3Manager) [![Swift Package Manager-SUCCESS](https://img.shields.io/badge/Swift_Package_Manager-SUCCESS-blue.svg?style=flat)](https://developer.apple.com/swift/) [![LICENSE](https://img.shields.io/badge/LICENSE-MIT-yellow.svg?style=flat)](https://developer.apple.com/swift/)
 
-A small tool for SQLite3 that makes basic [CRUD](https://zh.wikipedia.org/zh-tw/增刪查改) easier to use.
-一個SQLite3的小工具，讓基本的[CRUD](https://zh.wikipedia.org/zh-tw/增刪查改)能更方便的使用.
+### [Introduction - 簡介](https://swiftpackageindex.com/William-Weng)
+- A small tool for SQLite3 that makes basic [CRUD](https://zh.wikipedia.org/zh-tw/增刪查改) easier to use.
+- 一個SQLite3的小工具，讓基本的[CRUD](https://zh.wikipedia.org/zh-tw/增刪查改)能更方便的使用.
 
 ![](./Example.gif)
 
 ### [Installation with Swift Package Manager](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/使用-spm-安裝第三方套件-xcode-11-新功能-2c4ffcf85b4b)
 ```
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "1.4.10"))
 ]
 ```
+
+### Function - 可用函式
+|函式|功能|
+|-|-|
+|connent(fileURL:)|建立SQLite連線|
+|connent(for:filename:)|建立SQLite連線|
+|execute(sql:)|直讀SQL|
+|prepare(sql:)|執行SQL語句|
+|select(sql:result:completion:)|執行SELECT SQL|
+|close()|關閉SQLite連線|
+|tableScheme(tableName:)|取得該Table的結構組成|
+|create(tableName:type:primaryKeys:isOverwrite:)|建立Table|
+|drop(tableName:isOverwrite:)|刪除Table|
+|transaction(type:)|事務處理|
+|insert(tableName:itemsArray:)|插入資料|
+|update(tableName:items:where:)|更新資料|
+|delete(tableName:where:)|刪除資料|
+|select(tableName:type:where:groupBy:having:orderBy:limit:)|查詢資訊|
+|select(tableName:functions:type:where:groupBy:having:orderBy:limit:)|搜尋資料|
 
 ### Example
 ```swift
