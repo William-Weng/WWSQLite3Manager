@@ -7,7 +7,6 @@
 //  file:///Users/iOS/Desktop/@WWSQLite3Manager
 
 import UIKit
-import WWPrint
 import WWSQLite3Manager
 
 final class ViewController: UIViewController {
@@ -95,7 +94,7 @@ final class ViewController: UIViewController {
         
         guard let database = database else { displayText(sql: nil, result: "Database Update Fail."); return }
         
-        let condition = SQLite3Condition.Where().isCompare(key: "id", type: .equal, value: "1")
+        let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
         let result = database.update(tableName: tableName, items: randomItems(), where: condition)
         
         displayText(sql: result.sql, result: result.isSussess)
@@ -106,7 +105,7 @@ final class ViewController: UIViewController {
         
         guard let database = database else { displayText(sql: nil, result: "Database Insert Fail."); return }
         
-        let condition = SQLite3Condition.Where().isCompare(key: "id", type: .equal, value: "1")
+        let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
         let result = database.delete(tableName: tableName, where: condition)
         
         displayText(sql: result.sql, result: result.isSussess)
@@ -116,9 +115,9 @@ final class ViewController: UIViewController {
     @IBAction func selectData(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Select Fail."); return }
-
-        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(key: "height", type: .greaterOrEqual, value: 165)
-        let orderBy = SQLite3Condition.OrderBy().item(key: "height", type: .ascending).addItem(key: "time", type: .descending)
+        
+        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(type: .greaterOrEqual(key: "height", value: 165))
+        let orderBy = SQLite3Condition.OrderBy().item(type: .ascending(key: "height")).addItem(type: .descending(key: "time"))
         let limit = SQLite3Condition.Limit().build(count: 3, offset: 5)
         let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy, limit: limit)
         

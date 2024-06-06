@@ -11,7 +11,7 @@
 ### [Installation with Swift Package Manager](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/使用-spm-安裝第三方套件-xcode-11-新功能-2c4ffcf85b4b)
 ```
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "1.4.10"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "1.5.0"))
 ]
 ```
 
@@ -48,7 +48,6 @@ final class Student: Codable {
     let time: Date?
 }
 
-// MARK: - SQLite3SchemeDelegate
 extension Student: SQLite3SchemeDelegate {
     
     static func structure() -> [(key: String, type: SQLite3Condition.DataType)] {
@@ -83,7 +82,6 @@ final class ViewController: UIViewController {
         super.viewDidLoad()
     }
     
-    /// 連接資料庫
     @IBAction func connentDatabase(_ sender: UIBarButtonItem) {
         
         let result = WWSQLite3Manager.shared.connent(for: .documents, filename: databaseName)
@@ -97,7 +95,6 @@ final class ViewController: UIViewController {
         }
     }
     
-    /// 關閉資料庫
     @IBAction func closeDatabase(_ sender: UIBarButtonItem) {
         
         guard let database = database,
@@ -109,7 +106,6 @@ final class ViewController: UIViewController {
         displayText(sql: nil, result: "Database Close Success.")
     }
     
-    /// 刪除資料表
     @IBAction func dropTable(_ sender: UIBarButtonItem) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Drop Fail."); return }
@@ -118,7 +114,6 @@ final class ViewController: UIViewController {
         displayText(sql: result.sql, result: result.isSussess)
     }
     
-    /// 建立資料表
     @IBAction func createTable(_ sender: UIBarButtonItem) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Create Fail."); return }
@@ -127,7 +122,6 @@ final class ViewController: UIViewController {
         displayText(sql: result.sql, result: result.isSussess)
     }
     
-    /// 資料表插入數據
     @IBAction func insertData(_ sender: UIButton) {
         
         guard let database = database,
@@ -140,7 +134,6 @@ final class ViewController: UIViewController {
         displayText(sql: result.sql, result: result.isSussess)
     }
     
-    /// 資料表的屬性
     @IBAction func tableScheme(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Scheme Fail."); return }
@@ -149,35 +142,32 @@ final class ViewController: UIViewController {
         displayText(sql: result.sql, result: result.array)
     }
     
-    /// 更新資料
     @IBAction func updateData(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Update Fail."); return }
         
-        let condition = SQLite3Condition.Where().isCompare(key: "id", type: .equal, value: "1")
+        let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
         let result = database.update(tableName: tableName, items: randomItems(), where: condition)
         
         displayText(sql: result.sql, result: result.isSussess)
     }
     
-    /// 刪除資料
     @IBAction func deleteData(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Insert Fail."); return }
         
-        let condition = SQLite3Condition.Where().isCompare(key: "id", type: .equal, value: "1")
+        let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
         let result = database.delete(tableName: tableName, where: condition)
         
         displayText(sql: result.sql, result: result.isSussess)
     }
     
-    /// 搜尋資料
     @IBAction func selectData(_ sender: UIButton) {
         
         guard let database = database else { displayText(sql: nil, result: "Database Select Fail."); return }
         
-        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(key: "height", type: .greaterOrEqual, value: 165)
-        let orderBy = SQLite3Condition.OrderBy().item(key: "height", type: .ascending).addItem(key: "time", type: .descending)
+        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(type: .greaterOrEqual(key: "height", value: 165))
+        let orderBy = SQLite3Condition.OrderBy().item(type: .ascending(key: "height")).addItem(type: .descending(key: "time"))
         let limit = SQLite3Condition.Limit().build(count: 3, offset: 5)
         let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy, limit: limit)
         
@@ -185,18 +175,13 @@ final class ViewController: UIViewController {
     }
 }
 
-// MARK: - 小工具
 private extension ViewController {
     
-    /// 顯示文字
-    /// - Parameter text: String?
     func displayText(sql: String?, result: Any) {
         sqlTextView.text = sql
         resultTextView.text = "\(result)"
     }
     
-    /// 測試用數據
-    /// - Returns: [SQLite3Database.InsertItem]
     func randomItems() -> [SQLite3Database.InsertItem] {
         
         let items: [SQLite3Database.InsertItem] = [

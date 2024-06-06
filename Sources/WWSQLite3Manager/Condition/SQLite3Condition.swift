@@ -49,19 +49,45 @@ public extension SQLite3Condition {
 public extension SQLite3Condition {
     
     /// 排序 => 小到大 / 大到小
-    enum OrderByType: String {
-        case ascending = "ASC"
-        case descending = "DESC"
+    enum OrderByType {
+        
+        case ascending(key: String)
+        case descending(key: String)
+        
+        /// SQL文字
+        /// - Returns: String
+        func symbol() -> String {
+            
+            switch self {
+            case .ascending: return "ASC"
+            case .descending: return "DESC"
+            }
+        }
     }
     
     /// 大於 / 等於 / 小於
-    enum CompareType: String {
-        case equal = "="
-        case greaterThan = ">"
-        case greaterOrEqual = ">="
-        case lessThan = "<"
-        case lessOrEqual = "<="
-        case notEqual = "!="
+    enum CompareType {
+        
+        case equal(key: String, value: Any)
+        case greaterThan(key: String, value: Any)
+        case greaterOrEqual(key: String, value: Any)
+        case lessThan(key: String, value: Any)
+        case lessOrEqual(key: String, value: Any)
+        case notEqual(key: String, value: Any)
+        
+        /// 運算符號
+        /// - Returns: String
+        func symbol() -> String {
+            
+            switch self {
+            case .equal(_, _): return "="
+            case .greaterThan(_, _): return ">"
+            case .greaterOrEqual(_, _): return ">="
+            case .lessThan(_, _): return "<"
+            case .lessOrEqual(_, _): return "<="
+            case .notEqual(_, _): return "!="
+            }
+        }
     }
     
     /// [SQLite3的資料類型](https://www.sqlite.org/datatype3.html)

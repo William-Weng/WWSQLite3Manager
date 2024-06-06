@@ -10,6 +10,13 @@ import Foundation
 // MARK: - 常數
 final class Constant {}
 
+// MARK: - typealias
+extension Constant {
+    
+    typealias CompareType = (key: String, symbol: String, value: Any)   // 比較用符號 (height >= 10)
+    typealias OrderType = (key: String, symbol: String)                 // 排序用符號 (height ASC)
+}
+
 // MARK: - enum
 extension Constant {
     
@@ -21,6 +28,8 @@ extension Constant {
         case unknown
         case notOpenURL
         
+        /// 錯誤訊息
+        /// - Returns: String
         private func errorMessage() -> String {
 
             switch self {

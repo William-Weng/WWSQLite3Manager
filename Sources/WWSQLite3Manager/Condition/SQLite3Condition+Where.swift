@@ -11,26 +11,26 @@ import Foundation
 public extension SQLite3Condition.Where {
     
     /// id >= 3
-    func isCompare(key: String, type: SQLite3Condition.CompareType, value: Any) -> Self {
-        self.items += " \(combineCompareString(key: key, type: type, value: value))"
+    func isCompare(type: SQLite3Condition.CompareType) -> Self {
+        self.items += " \(combineCompareString(type: type))"
         return self
     }
     
     /// AND id >= 3
-    func andCompare(key: String, type: SQLite3Condition.CompareType, value: Any) -> Self {
-        self.items += " AND \(combineCompareString(key: key, type: type, value: value))"
+    func andCompare(type: SQLite3Condition.CompareType) -> Self {
+        self.items += " AND \(combineCompareString(type: type))"
         return self
     }
     
     /// OR id >= 3
-    func orCompare(key: String, type: SQLite3Condition.CompareType, value: Any) -> Self {
-        self.items += " OR \(combineCompareString(key: key, type: type, value: value))"
+    func orCompare(type: SQLite3Condition.CompareType) -> Self {
+        self.items += " OR \(combineCompareString(type: type))"
         return self
     }
     
     /// NOT id >= 3
-    func notCompare(key: String, type: SQLite3Condition.CompareType, value: Any) -> Self {
-        self.items += " NOT \(combineCompareString(key: key, type: type, value: value))"
+    func notCompare(type: SQLite3Condition.CompareType) -> Self {
+        self.items += " NOT \(combineCompareString(type: type))"
         return self
     }
 }
@@ -149,12 +149,33 @@ private extension SQLite3Condition.Where {
     /// 組合比較用字串 => id >= 3
     /// - Parameters:
     ///   - type: SQLite3Condition.CompareType
-    ///   - key: 欄位
-    ///   - value: 數值
     /// - Returns: String
-    func combineCompareString(key: String, type: SQLite3Condition.CompareType, value: Any) -> String {
-        let sql = "\(key) \(type.rawValue) \(fixSqlValue(value))"
+    func combineCompareString(type: SQLite3Condition.CompareType) -> String {
+        
+        let info = parseCompareTypeInfo(type)
+        let sql = "\(info.key) \(info.symbol) \(fixSqlValue(info.value))"
+        
         return sql
+    }
+    
+    /// 解析SQLite3Condition.CompareType
+    /// - Parameter type: SQLite3Condition.CompareType
+    /// - Returns: Constant.CompareType
+    func parseCompareTypeInfo(_ type: SQLite3Condition.CompareType) -> Constant.CompareType {
+        
+        let key: String
+        let value: Any
+        
+        switch type {
+        case .equal(let _key, let _value): key = _key; value = _value
+        case .greaterThan(let _key, let _value): key = _key; value = _value
+        case .greaterOrEqual(let _key, let _value): key = _key; value = _value
+        case .lessThan(let _key, let _value): key = _key; value = _value
+        case .lessOrEqual(let _key, let _value): key = _key; value = _value
+        case .notEqual(let _key, let _value): key = _key; value = _value
+        }
+        
+        return (key: key, symbol: type.symbol(), value: value)
     }
     
     /// 組合數值範圍用字串 => height BETWEEN 170 AND 180

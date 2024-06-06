@@ -10,25 +10,47 @@ import Foundation
 // MARK: - OrderBy
 public extension SQLite3Condition.OrderBy {
     
-    /// 組成排序用字串
-    /// - name ASC
+    /// 組成排序用字串 => name ASC
     /// - Parameters:
-    ///   - key: String
     ///   - type: SQLite3Condition.OrderByType
     /// - Returns: Self
-    func item(key: String, type: SQLite3Condition.OrderByType) -> Self {
-        self.items += "\(key) \(type.rawValue)"
+    func item(type: SQLite3Condition.OrderByType) -> Self {
+        
+        let info = parseOrderByTypeInfo(type)
+        self.items += "\(info.key) \(info.symbol)"
+        
         return self
     }
     
-    /// 組成排序用字串
-    /// - , height DESC
+    /// 組成排序用字串 => , height DESC
     /// - Parameters:
-    ///   - key: String
     ///   - type: SQLite3Condition.OrderByType
     /// - Returns: Self
-    func addItem(key: String, type: SQLite3Condition.OrderByType) -> Self {
-        self.items += ", \(key) \(type.rawValue)"
+    func addItem(type: SQLite3Condition.OrderByType) -> Self {
+        
+        let info = parseOrderByTypeInfo(type)
+        self.items += ", \(info.key) \(info.symbol)"
+        
         return self
+    }
+}
+
+// MARK: - 小工具
+private extension SQLite3Condition.OrderBy {
+    
+    /// 解析SQLite3Condition.OrderByType
+    /// - Parameter type: SQLite3Condition.OrderByType
+    /// - Returns: Constant.OrderType
+    func parseOrderByTypeInfo(_ type: SQLite3Condition.OrderByType) -> Constant.OrderType {
+        
+        let key: String
+        let symbol: String
+
+        switch type {
+        case .ascending(let _key): key = _key; symbol = "ASC"
+        case .descending(let _key): key = _key; symbol = "DESC"
+        }
+        
+        return (key: key, symbol: symbol)
     }
 }
