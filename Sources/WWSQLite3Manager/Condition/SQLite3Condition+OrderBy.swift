@@ -44,13 +44,14 @@ private extension SQLite3Condition.OrderBy {
     func parseOrderByTypeInfo(_ type: SQLite3Condition.OrderByType) -> Constant.OrderType {
         
         let key: String
-        let symbol: String
-
+        let symbol = type.symbol()
+        
         switch type {
-        case .ascending(let _key): key = _key; symbol = "ASC"
-        case .descending(let _key): key = _key; symbol = "DESC"
+        case .ascending(let _key): key = _key
+        case .descending(let _key): key = _key
+        case .random: key = ""
         }
         
-        return (key: key, symbol: symbol)
+        return (key: key, symbol: type.symbol())
     }
 }

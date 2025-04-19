@@ -53,6 +53,7 @@ public extension SQLite3Condition {
         
         case ascending(key: String)
         case descending(key: String)
+        case random
         
         /// SQL文字
         /// - Returns: String
@@ -61,6 +62,7 @@ public extension SQLite3Condition {
             switch self {
             case .ascending: return "ASC"
             case .descending: return "DESC"
+            case .random: return "RANDOM()"
             }
         }
     }
