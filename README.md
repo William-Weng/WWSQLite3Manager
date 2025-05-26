@@ -11,15 +11,15 @@
 ### [Installation with Swift Package Manager](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/使用-spm-安裝第三方套件-xcode-11-新功能-2c4ffcf85b4b)
 ```
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "1.5.1"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "1.5.2"))
 ]
 ```
 
 ### [Function - 可用函式](https://ezgif.com/video-to-webp)
 |函式|功能|
 |-|-|
-|connent(fileURL:)|建立SQLite連線|
-|connent(for:filename:)|建立SQLite連線|
+|connect(fileURL:)|建立SQLite連線|
+|connect(for:filename:)|建立SQLite連線|
 |execute(sql:)|直讀SQL|
 |prepare(sql:)|執行SQL語句|
 |select(sql:result:completion:)|執行SELECT SQL|
@@ -84,7 +84,7 @@ final class ViewController: UIViewController {
     
     @IBAction func connentDatabase(_ sender: UIBarButtonItem) {
         
-        let result = WWSQLite3Manager.shared.connent(for: .documents, filename: databaseName)
+        let result = WWSQLite3Manager.shared.connect(for: .documents, filename: databaseName)
         
         switch result {
         case .failure(let error):

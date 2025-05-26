@@ -55,7 +55,7 @@ public extension WWSQLite3Manager {
     /// [建立SQLite連線](https://itisjoe.gitbooks.io/swiftgo/content/database/sqlite.html)
     /// - Parameter fileURL: [URL?](https://gist.github.com/yossan/91079df35609892722f3102246493394)
     /// - Returns: [Result<SQLiteConnect, Error>](https://github.com/itisjoe/swiftgo_files/blob/master/database/sqlite/ExSQLite/ExSQLite/SQLiteConnect.swift)
-    func connent(fileURL: URL?) -> Result<SQLite3Database, Error> {
+    func connect(fileURL: URL?) -> Result<SQLite3Database, Error> {
         
         var database: OpaquePointer? = nil
         
@@ -74,8 +74,8 @@ public extension WWSQLite3Manager {
     /// - Parameters:
     ///   - directoryType: [Constant.FileManagerDirectoryType](https://blog.csdn.net/CX_NO1/article/details/86633190)
     ///   - filename: String
-    func connent(for directoryType: FileDirectoryType = .documents, filename: String) -> Result<SQLite3Database, Error> {
+    func connect(for directoryType: FileDirectoryType = .documents, filename: String) -> Result<SQLite3Database, Error> {
         let fileURL = directoryType.url()?.appendingPathComponent(filename)
-        return connent(fileURL: fileURL)
+        return connect(fileURL: fileURL)
     }
 }
