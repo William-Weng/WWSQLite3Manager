@@ -13,11 +13,9 @@ public extension WWSQLite3Manager {
     typealias SelectResult = (sql: String, array: [[String: Any]])
     typealias SelectDistinctResult = (sql: String, array: [Any])
     typealias InsertItem = (key: String, value: Any)
-}
-
-// MARK: - typealias
-extension WWSQLite3Manager {
     
-    typealias CompareType = (key: String, symbol: String, value: Any)   // 比較用符號 (height >= 10)
-    typealias OrderType = (key: String, symbol: String)                 // 排序用符號 (height ASC)
+    typealias Attribute = (isNotNull: Bool, isNoCase: Bool, isUnique: Bool)
+    typealias CompareValue = (key: String, symbol: String, value: Any)      // 比較用符號 (height >= 10)
+    typealias OrderType = (key: String, symbol: String)                     // 排序用符號 (height ASC)
+    
 }

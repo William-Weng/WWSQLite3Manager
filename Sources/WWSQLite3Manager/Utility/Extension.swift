@@ -16,7 +16,7 @@ public extension OpaquePointer {
     ///   - column: 第幾列？
     ///   - dataType: 類型
     /// - Returns: Any?
-    func _value(at column: Int32, dataType: SQLite3Condition.DataType) -> Any? {
+    func _value(at column: Int32, dataType: WWSQLite3Manager.DataType) -> Any? {
         
         switch dataType {
         case .INTEGER: return self._Int32(at: column)

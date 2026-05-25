@@ -18,11 +18,11 @@ final class Student: Codable {
 }
 
 // MARK: - SQLite3SchemeDelegate
-extension Student: SQLite3SchemeDelegate {
+extension Student: WWSQLite3Manager.SchemeDelegate {
     
-    static func structure() -> [(key: String, type: SQLite3Condition.DataType)] {
+    static func structure() -> [(key: String, type: WWSQLite3Manager.DataType)] {
         
-        let keyTypes: [(key: String, type: SQLite3Condition.DataType)] = [
+        let keyTypes: [(key: String, type: WWSQLite3Manager.DataType)] = [
             (key: "id", type: .INTEGER()),
             (key: "name", type: .TEXT(attribute: (isNotNull: true, isNoCase: true, isUnique: true), defaultValue: nil)),
             (key: "height", type: .REAL()),

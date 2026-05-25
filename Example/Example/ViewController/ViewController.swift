@@ -25,14 +25,12 @@ final class ViewController: UIViewController {
     /// 連接資料庫
     @IBAction func connentDatabase(_ sender: UIBarButtonItem) {
         
-        let result = WWSQLite3Manager.shared.connect(for: .documentsDirectory, filename: databaseName)
-        
-        switch result {
-        case .failure(let error):
-            displayText(sql: nil, result: error)
-        case .success(let database):
+        do {
+            let database = try WWSQLite3Manager.shared.connect(for: .documentsDirectory, filename: databaseName)
             self.database = database
-            displayText(sql: nil, result: database.fileURL)
+            displayText(sql: nil, result: "connected")
+        } catch {
+            displayText(sql: nil, result: error)
         }
     }
     
@@ -43,6 +41,7 @@ final class ViewController: UIViewController {
         
         do {
             try database.close()
+            displayText(sql: nil, result: "closed")
         } catch {
             displayText(sql: nil, result: error)
         }
@@ -103,7 +102,7 @@ final class ViewController: UIViewController {
         
         guard let database = database else { displayText(sql: nil, result: "Database Update Fail."); return }
         
-        let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
+        let condition = WWSQLite3Manager.Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
         
         do {
             let sql = try database.update(tableName: tableName, items: randomItems(), where: condition)
@@ -118,7 +117,7 @@ final class ViewController: UIViewController {
         
         guard let database = database else { displayText(sql: nil, result: "Database Insert Fail."); return }
         
-        let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
+        let condition = WWSQLite3Manager.Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
         
         do {
             let sql = try database.delete(tableName: tableName, where: condition)
@@ -133,9 +132,9 @@ final class ViewController: UIViewController {
         
         guard let database = database else { displayText(sql: nil, result: "Database Select Fail."); return }
         
-        let condition = SQLite3Condition.Where().like(key: "name", condition: "William%").andCompare(type: .greaterOrEqual(key: "height", value: 165))
-        let orderBy = SQLite3Condition.OrderBy().item(type: .ascending(key: "height")).addItem(type: .descending(key: "time"))
-        let limit = SQLite3Condition.Limit().build(count: 3, offset: 5)
+        let condition = WWSQLite3Manager.Condition.Where().like(key: "name", condition: "William%").andCompare(type: .greaterOrEqual(key: "height", value: 165))
+        let orderBy = WWSQLite3Manager.Condition.OrderBy().item(type: .ascending(key: "height")).addItem(type: .descending(key: "time"))
+        let limit = WWSQLite3Manager.Condition.Limit().build(count: 3, offset: 5)
         let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy, limit: limit)
         
         displayText(sql: result.sql, result: result.array)

@@ -1,14 +1,22 @@
 //
-//  SQLite3Condition+Limit.swift
+//  File.swift
 //  WWSQLite3Manager
 //
-//  Created by William.Weng on 2022/1/18.
+//  Created by iOS on 2026/5/25.
 //
 
 import Foundation
 
+public extension WWSQLite3Manager.Condition {
+    
+    /// [數量取得條件](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
+    public class Limit: NSObject {
+        var items: String = ""
+    }
+}
+
 // MARK: - Limit
-public extension SQLite3Condition.Limit {
+public extension WWSQLite3Manager.Condition.Limit {
     
     /// 產生數量取得條件
     /// - LIMIT 3 OFFSET 2

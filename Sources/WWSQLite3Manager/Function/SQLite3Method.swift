@@ -16,14 +16,14 @@ public extension SQLite3Method {
     // MARK: - SQL的常用函數 - Select
     enum SelectFunction {
         
-        case `default`(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)      // 原始的一般欄位
-        case count(_ key: String? = nil, _ type: SQLite3Condition.DataType, aliasName: String? = nil)   // 總數量
-        case distinct(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)       // 未重複值
-        case distinctCount(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)  // 未重複值的總數量
-        case min(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)            // 最小值
-        case max(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)            // 最大值
-        case avg(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)            // 平均值
-        case sum(_ key: String, _ type: SQLite3Condition.DataType, aliasName: String? = nil)            // 全部總和
+        case `default`(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)      // 原始的一般欄位
+        case count(_ key: String? = nil, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)   // 總數量
+        case distinct(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)       // 未重複值
+        case distinctCount(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)  // 未重複值的總數量
+        case min(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)            // 最小值
+        case max(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)            // 最大值
+        case avg(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)            // 平均值
+        case sum(_ key: String, _ type: WWSQLite3Manager.DataType, aliasName: String? = nil)            // 全部總和
         
         /// [產生SQL語句](https://ithelp.ithome.com.tw/articles/10208205)
         /// - Returns: [String](https://ithelp.ithome.com.tw/articles/10259378)
@@ -69,9 +69,9 @@ public extension SQLite3Method {
         
         /// 回傳資料型態
         /// - Returns: SQLite3Condition.DataType
-        func dataType() -> SQLite3Condition.DataType {
+        func dataType() -> WWSQLite3Manager.DataType {
             
-            var dataType: SQLite3Condition.DataType
+            var dataType: WWSQLite3Manager.DataType
             
             switch self {
             case .default(_, let type, _): dataType = type

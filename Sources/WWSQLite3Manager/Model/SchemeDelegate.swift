@@ -7,18 +7,19 @@
 
 import UIKit
 
-// MARK: - SQLite3SchemeDelegate
-public protocol SQLite3SchemeDelegate {
+// MARK: - SchemeDelegate
+public extension WWSQLite3Manager {
     
-    /// 欄位順序
-    static func structure() -> [(key: String, type: SQLite3Condition.DataType)]
-    
-    /// 複合主鍵
-    static func primaryKeys(_ keys: [String?]) -> String?
+    /// 建立資料庫的欄位 / 主鍵設定
+    protocol SchemeDelegate {
+        
+        static func structure() -> [(key: String, type: WWSQLite3Manager.DataType)]     // 欄位結構順序
+        static func primaryKeys(_ keys: [String?]) -> String?                           // 複合主鍵名稱
+    }
 }
 
 // MARK: - protocol實作
-public extension SQLite3SchemeDelegate {
+public extension WWSQLite3Manager.SchemeDelegate {
     
     /// [建立主鍵限制字串 (Primary Key)](https://www.1keydata.com/tw/sql/sql-primary-key.html)
     /// - Parameter keys: 主鍵欄位名稱陣列，可為單一主鍵或複合主鍵
@@ -39,3 +40,5 @@ public extension SQLite3SchemeDelegate {
         return "PRIMARY KEY(\(fields.joined(separator: ", ")))"
     }
 }
+
+

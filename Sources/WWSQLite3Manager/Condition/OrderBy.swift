@@ -7,14 +7,22 @@
 
 import Foundation
 
-// MARK: - OrderBy
-public extension SQLite3Condition.OrderBy {
+public extension WWSQLite3Manager.Condition {
     
+    /// [數量取得條件](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
+    public class OrderBy: NSObject {
+        var items: String = ""
+    }
+}
+
+// MARK: - OrderBy
+public extension WWSQLite3Manager.Condition.OrderBy {
+
     /// 組成排序用字串 => name ASC
     /// - Parameters:
     ///   - type: SQLite3Condition.OrderByType
     /// - Returns: Self
-    func item(type: SQLite3Condition.OrderByType) -> Self {
+    func item(type: WWSQLite3Manager.OrderByType) -> Self {
         
         let info = parseOrderByTypeInfo(type)
         self.items += "\(info.key) \(info.symbol)"
@@ -26,7 +34,7 @@ public extension SQLite3Condition.OrderBy {
     /// - Parameters:
     ///   - type: SQLite3Condition.OrderByType
     /// - Returns: Self
-    func addItem(type: SQLite3Condition.OrderByType) -> Self {
+    func addItem(type: WWSQLite3Manager.OrderByType) -> Self {
         
         let info = parseOrderByTypeInfo(type)
         self.items += ", \(info.key) \(info.symbol)"
@@ -36,12 +44,12 @@ public extension SQLite3Condition.OrderBy {
 }
 
 // MARK: - 小工具
-private extension SQLite3Condition.OrderBy {
-    
+public extension WWSQLite3Manager.Condition.OrderBy {
+
     /// 解析SQLite3Condition.OrderByType
     /// - Parameter type: SQLite3Condition.OrderByType
     /// - Returns: OrderType
-    func parseOrderByTypeInfo(_ type: SQLite3Condition.OrderByType) -> WWSQLite3Manager.OrderType {
+    func parseOrderByTypeInfo(_ type: WWSQLite3Manager.OrderByType) -> WWSQLite3Manager.OrderType {
         
         let key: String
         let symbol = type.symbol()

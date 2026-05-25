@@ -7,37 +7,51 @@
 
 import Foundation
 
+public extension WWSQLite3Manager.Condition {
+    
+    /// [篩選條件](https://www.fooish.com/sql/where.html)
+    class Where {
+        
+        var items: String = ""
+        
+        private let isNull = "IS NULL"
+        private let isNotNull = "IS NOT NULL"
+        
+        public init() {}
+    }
+}
+
 // MARK: - Where
-public extension SQLite3Condition.Where {
+public extension WWSQLite3Manager.Condition.Where {
     
     /// id >= 3
-    func isCompare(type: SQLite3Condition.CompareType) -> Self {
+    func isCompare(type: WWSQLite3Manager.CompareType) -> Self {
         self.items += " \(combineCompareString(type: type))"
         return self
     }
     
     /// AND id >= 3
-    func andCompare(type: SQLite3Condition.CompareType) -> Self {
+    func andCompare(type: WWSQLite3Manager.CompareType) -> Self {
         self.items += " AND \(combineCompareString(type: type))"
         return self
     }
     
     /// OR id >= 3
-    func orCompare(type: SQLite3Condition.CompareType) -> Self {
+    func orCompare(type: WWSQLite3Manager.CompareType) -> Self {
         self.items += " OR \(combineCompareString(type: type))"
         return self
     }
     
     /// NOT id >= 3
-    func notCompare(type: SQLite3Condition.CompareType) -> Self {
+    func notCompare(type: WWSQLite3Manager.CompareType) -> Self {
         self.items += " NOT \(combineCompareString(type: type))"
         return self
     }
 }
 
 // MARK: - BETWEEN AND
-public extension SQLite3Condition.Where {
-    
+public extension WWSQLite3Manager.Condition.Where {
+
     /// height BETWEEN 170 AND 180
     func between(key: String, from fromValue: Any, to toValue: Any) -> Self {
         self.items += " \(combineBetweenString(key: key, from: fromValue, to: toValue))"
@@ -64,8 +78,8 @@ public extension SQLite3Condition.Where {
 }
 
 // MARK: - NULL
-public extension SQLite3Condition.Where {
-    
+public extension WWSQLite3Manager.Condition.Where {
+
     /// image IS NULL
     func isNull(key: String) -> Self {
         self.items += " \(combineIsNullString(key: key))"
@@ -92,8 +106,8 @@ public extension SQLite3Condition.Where {
 }
 
 // MARK: - LIKE
-public extension SQLite3Condition.Where {
-    
+public extension WWSQLite3Manager.Condition.Where {
+
     func like(key: String, condition: String) -> Self {
         self.items += " \(combineLikeString(key: key, condition: condition))"
         return self
@@ -116,8 +130,8 @@ public extension SQLite3Condition.Where {
 }
 
 // MARK: - IN
-public extension SQLite3Condition.Where {
-    
+public extension WWSQLite3Manager.Condition.Where {
+
     /// name IN ('Ana','Ben', 'Curry')
     func `in`(key: String, values: [Any]) -> Self {
         self.items += " \(combineInString(key: key, values: values))"
@@ -144,13 +158,13 @@ public extension SQLite3Condition.Where {
 }
 
 // MARK: - 小工具
-private extension SQLite3Condition.Where {
-    
+public extension WWSQLite3Manager.Condition.Where {
+
     /// 組合比較用字串 => id >= 3
     /// - Parameters:
     ///   - type: SQLite3Condition.CompareType
     /// - Returns: String
-    func combineCompareString(type: SQLite3Condition.CompareType) -> String {
+    func combineCompareString(type: WWSQLite3Manager.CompareType) -> String {
         
         let info = parseCompareTypeInfo(type)
         let sql = "\(info.key) \(info.symbol) \(fixSqlValue(info.value))"
@@ -161,7 +175,7 @@ private extension SQLite3Condition.Where {
     /// 解析SQLite3Condition.CompareType
     /// - Parameter type: SQLite3Condition.CompareType
     /// - Returns: CompareType
-    func parseCompareTypeInfo(_ type: SQLite3Condition.CompareType) -> WWSQLite3Manager.CompareType {
+    func parseCompareTypeInfo(_ type: WWSQLite3Manager.CompareType) -> WWSQLite3Manager.CompareValue {
         
         let key: String
         let value: Any

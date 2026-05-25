@@ -95,16 +95,16 @@ public extension WWSQLite3Manager.Database {
     /// - Parameter tableName: String
     /// - Returns: SelectResult
     func tableScheme(tableName: String) -> WWSQLite3Manager.SelectResult {
-        return tableInfomation(tableName: tableName, type: SQLite3TableSchemeInfomation.self)
+        return tableInfomation(tableName: tableName, type: WWSQLite3Manager.TableScheme.self)
     }
     
     /// [建立資料表](https://www.sqlitetutorial.net/sqlite-create-table/)
     /// - CREATE TABLE IF NOT EXISTS "students" ("id" INTEGER DEFAULT 1, "name" TEXT, "height" REAL, "image" BLOB, "time" TEXT, PRIMARY KEY ("id"))
     /// - Parameters:
-    ///   - tableName: 資料表名稱。
-    ///   - type: 資料表結構定義型別。
-    ///   - primaryKeys: 主鍵欄位名稱陣列，可用於單一主鍵或複合主鍵。
-    ///   - ifNotExists: 是否只在資料表不存在時才建立；`true` 時使用 `CREATE TABLE IF NOT EXISTS`。
+    ///   - tableName: 資料表名稱
+    ///   - type: 資料表結構定義型別
+    ///   - primaryKeys: 主鍵欄位名稱陣列，可用於單一主鍵或複合主鍵
+    ///   - ifNotExists: 是否只在資料表不存在時才建立；`true` 時使用 `CREATE TABLE IF NOT EXISTS`
     /// - Throws: `WWSQLite3Manager.CustomError`
     /// - Returns: 最終執行的 SQL 字串。
     /// - Note:
@@ -112,7 +112,7 @@ public extension WWSQLite3Manager.Database {
     ///   - 若 `primaryKeys` 為空，預設會嘗試使用第一個欄位作為主鍵。
     ///   - 若有多個主鍵欄位，會建立複合主鍵，例如 `PRIMARY KEY ("id", "name")`。
     @discardableResult
-    func create(tableName: String, type: SQLite3SchemeDelegate.Type, primaryKeys: [String?] = [], ifNotExists: Bool = false) throws -> String {
+    func create(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, primaryKeys: [String?] = [], ifNotExists: Bool = false) throws -> String {
         
         let fields = type.structure().map { key, type in "\(key.sqlIdentifier()) \(type.toSQL())" }.joined(separator: ", ")
         let keys = primaryKeys.isEmpty ? [type.structure().first?.key] : primaryKeys
@@ -193,7 +193,7 @@ public extension WWSQLite3Manager.Database {
     /// - Throws: CustomError
     /// - Returns: String
     @discardableResult
-    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: SQLite3Condition.Where?) throws -> String {
+    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: WWSQLite3Manager.Condition.Where?) throws -> String {
         
         let _items = items.map { "\($0) = '\($1)'" }.joined(separator: ", ")
         var sql = "UPDATE \(tableName) SET \(_items)"
@@ -212,7 +212,7 @@ public extension WWSQLite3Manager.Database {
     /// - Throws: CustomError
     /// - Returns: ExecuteResult
     @discardableResult
-    func delete(tableName: String, where whereConditions: SQLite3Condition.Where?) throws -> String {
+    func delete(tableName: String, where whereConditions: WWSQLite3Manager.Condition.Where?) throws -> String {
         
         var sql = "DELETE FROM \(tableName)"
         
@@ -226,14 +226,14 @@ public extension WWSQLite3Manager.Database {
     /// - SELECT * FROM students WHERE id = 1
     /// - Parameters:
     ///   - tableName: String
-    ///   - type: SQLite3SchemeDelegate.Type
+    ///   - type: SchemeDelegate.Type
     ///   - whereConditions: Where語句
     ///   - groupByConditions: GroupBy語句
     ///   - havingConditions: HAVING語句
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
+    func select(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, where whereConditions: WWSQLite3Manager.Condition.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.Condition.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Condition.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.Condition.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         let fields = type.structure().map { $0.key }.joined(separator: ", ")
         
@@ -248,7 +248,7 @@ public extension WWSQLite3Manager.Database {
         if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         
         defer { sqlite3_finalize(statement) }
-                
+        
         sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
 
         while sqlite3_step(statement) == SQLITE_ROW {
@@ -275,7 +275,7 @@ public extension WWSQLite3Manager.Database {
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
+    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: WWSQLite3Manager.Condition.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.Condition.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Condition.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.Condition.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         var sql = "SELECT * FROM \(tableName)"
         
@@ -318,9 +318,9 @@ private extension WWSQLite3Manager.Database {
     /// [取得該Table的結構組成](https://stackoverflow.com/questions/39824274/sqlite-pragma-table-infotable-not-returning-column-names-using-data-sqlite-in)
     /// - Parameters:
     ///   - tableName: String
-    ///   - type: SQLite3SchemeDelegate.Type
+    ///   - type: SchemeDelegate.Type
     /// - Returns: SelectResult
-    func tableInfomation(tableName: String, type: SQLite3SchemeDelegate.Type) -> WWSQLite3Manager.SelectResult {
+    func tableInfomation(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type) -> WWSQLite3Manager.SelectResult {
         
         let sql = "PRAGMA TABLE_INFO(\(tableName))"
         

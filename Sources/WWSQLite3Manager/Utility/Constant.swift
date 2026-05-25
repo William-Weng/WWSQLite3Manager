@@ -10,26 +10,66 @@ import Foundation
 // MARK: - enum
 public extension WWSQLite3Manager {
     
-    /// 自訂錯誤
+    /// WWSQLite3Manager 使用的自訂錯誤型別
+    ///
+    /// 用來描述資料庫開啟失敗、缺少必要資料，或是 SQLite API 執行時發生的錯誤資訊
     enum CustomError: Error, LocalizedError {
         
-        case unknown
-        case notOpenURL
-        case missingItems
-        case sqlite(operation: Operation, code: Int32, message: String)
+        case unknown                                                        // 未知錯誤
+        case notOpenURL                                                     // 無法開啟指定的資料庫 URL
+        case missingItems                                                   // 缺少必要的資料項目
+        case sqlite(operation: Operation, code: Int32, message: String)     // SQLite 操作失敗 (操作類型, 錯誤碼, 錯誤訊息)
     }
     
+    /// SQLite 執行流程中的操作類型
+    ///
+    /// 可用來標示錯誤發生於哪一個 SQLite 呼叫階段，方便除錯與記錄
     enum Operation: String {
-        case execute
-        case prepare
-        case step
-        case close
+        
+        case execute                                                        // 執行 SQL 指令
+        case prepare                                                        // 預備 SQL 語句
+        case step                                                           // 執行單步查詢或更新
+        case close                                                          // 關閉資料庫連線
     }
     
+    /// SQLite 交易控制指令類型
+    ///
+    /// 對應 SQLite 常見的交易語法字串，可用於開始、提交或回滾交易
     enum TransactionType: String {
-        case begin = "BEGIN"
-        case commit = "COMMIT"
-        case rollback = "ROLLBACK"
+        
+        case begin = "BEGIN"                                                // 開始交易
+        case commit = "COMMIT"                                              // 提交交易
+        case rollback = "ROLLBACK"                                          // 回滾交易
+    }
+
+    /// 排序 => 小到大 / 大到小
+    enum OrderByType {
+        
+        case ascending(key: String)                                         // 依指定欄位遞增排序 (要排序的欄位名稱)
+        case descending(key: String)                                        // 依指定欄位遞減排序 (要排序的欄位名稱)
+        case random                                                         // 隨機排序
+    }
+    
+    /// 大於 / 等於 / 小於
+    enum CompareType {
+        
+        case equal(key: String, value: Any)                                 // 等於指定值 (欄位名稱, 要比較的值)
+        case greaterThan(key: String, value: Any)                           // 大於指定值 (欄位名稱, 要比較的值)
+        case greaterOrEqual(key: String, value: Any)                        // 大於或等於指定值 (欄位名稱, 要比較的值)
+        case lessThan(key: String, value: Any)                              // 小於指定值 (欄位名稱, 要比較的值)
+        case lessOrEqual(key: String, value: Any)                           // 小於或等於指定值 (欄位名稱, 要比較的值)
+        case notEqual(key: String, value: Any)                              // 不等於指定值 (欄位名稱, 要比較的值)
+    }
+    
+    /// [SQLite3的資料類型](https://www.sqlite.org/datatype3.html)
+    enum DataType {
+                
+        case INTEGER(attribute: Attribute = (false, false, false), defaultValue: Int? = nil)        // 整數型別 (欄位屬性設定, 預設值)
+        case TEXT(attribute: Attribute = (false, false, false), defaultValue: String? = nil)        // 文字型別 (欄位屬性設定, 預設值)
+        case BLOB(attribute: Attribute = (false, false, false), defaultValue: String? = nil)        // 二進位資料型別 (欄位屬性設定, 預設值)
+        case REAL(attribute: Attribute = (false, false, false), defaultValue: Double? = nil)        // 浮點數型別 (欄位屬性設定, 預設值)
+        case NUMERIC(attribute: Attribute = (false, false, false), defaultValue: Double? = nil)     // 數值型別 (欄位屬性設定, 預設值)
+        case TIMESTAMP(defaultValue: String? = "CURRENT_TIMESTAMP")                                 // 時間戳記型別
     }
 }
 
@@ -39,6 +79,39 @@ public extension WWSQLite3Manager.CustomError {
     var errorDescription: String { makeErrorDescription() }
     var failureReason: String { makeFailureReason() }
     var recoverySuggestion: String? { makeRecoverySuggestion() }
+}
+
+// MARK: - OrderByType
+public extension WWSQLite3Manager.OrderByType {
+    
+    /// SQL文字
+    /// - Returns: String
+    func symbol() -> String {
+        
+        switch self {
+        case .ascending: return "ASC"
+        case .descending: return "DESC"
+        case .random: return "RANDOM()"
+        }
+    }
+}
+
+// MARK: - CompareType
+public extension WWSQLite3Manager.CompareType {
+    
+    /// 運算符號
+    /// - Returns: String
+    func symbol() -> String {
+        
+        switch self {
+        case .equal(_, _): return "="
+        case .greaterThan(_, _): return ">"
+        case .greaterOrEqual(_, _): return ">="
+        case .lessThan(_, _): return "<"
+        case .lessOrEqual(_, _): return "<="
+        case .notEqual(_, _): return "!="
+        }
+    }
 }
 
 // MARK: - CustomError
@@ -99,3 +172,68 @@ private extension WWSQLite3Manager.CustomError {
     }
 }
 
+// MARK: - DataType
+public extension WWSQLite3Manager.DataType {
+    
+    /// .INTEGER => INTEGER / .TEXT => TEXT
+    /// - Returns: String
+    func toString() -> String {
+        
+        switch self {
+        case .INTEGER: return "INTEGER"
+        case .TEXT: return "TEXT"
+        case .BLOB: return "BLOB"
+        case .REAL: return "REAL"
+        case .NUMERIC: return "NUMERIC"
+        case .TIMESTAMP: return "TIMESTAMP"
+        }
+    }
+    
+    /// [轉成SQL語法](http://tw.gitbook.net/sqlite/sqlite_using_autoincrement.html)
+    /// - number INTEGER DEFAULT 0 NOT NULL COLLATE NOCASE
+    /// - Returns: [String](https://www.sqlite.org/datatype3.html)
+    func toSQL() -> String {
+        
+        switch self {
+        case .INTEGER(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .TEXT(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .BLOB(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .REAL(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .NUMERIC(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .TIMESTAMP(let defaultValue): return timestampString(defaultValue: defaultValue)
+        }
+    }
+}
+
+// MARK: - 小工具
+public extension WWSQLite3Manager.DataType {
+
+    /// 組成SQL字串
+    /// - Parameters:
+    ///   - attribute: SQLite3Condition.Attribute
+    ///   - defaultValue: T?
+    /// - Returns: String
+    func sqlStringMaker<T>(attribute: WWSQLite3Manager.Attribute, defaultValue: T?) -> String {
+        
+        var sql = self.toString()
+        
+        if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }
+        if (attribute.isNotNull) { sql += " NOT NULL" }
+        if (attribute.isNoCase) { sql += " COLLATE NOCASE" }
+        if (attribute.isUnique) { sql += " UNIQUE" }
+        
+        return sql
+    }
+    
+    /// [組成TimeStamp字串](https://www.cnblogs.com/endv/p/12129481.html)
+    /// - Parameters:
+    ///   - defaultValue: String
+    /// - Returns: String
+    func timestampString(defaultValue: String?) -> String {
+        
+        var sql = self.toString()
+        if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }
+        
+        return sql
+    }
+}
