@@ -198,8 +198,8 @@ public extension WWSQLite3Manager.Database {
         let _items = items.map { "\($0) = '\($1)'" }.joined(separator: ", ")
         var sql = "UPDATE \(tableName) SET \(_items)"
         
-        if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
-        let isSuccess = try prepare(sql: sql)
+//        if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
+//        let isSuccess = try prepare(sql: sql)
         
         return sql
     }
@@ -216,7 +216,7 @@ public extension WWSQLite3Manager.Database {
         
         var sql = "DELETE FROM \(tableName)"
         
-        if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
+//        if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
         try prepare(sql: sql)
         
         return sql
@@ -241,11 +241,11 @@ public extension WWSQLite3Manager.Database {
         var statement: OpaquePointer? = nil
         var array: [[String : Any]] = []
         
-        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
-        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
-        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
-        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
-        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
+//        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
+//        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
+//        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
+//        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
+//        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         
         defer { sqlite3_finalize(statement) }
         
@@ -275,7 +275,7 @@ public extension WWSQLite3Manager.Database {
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: WWSQLite3Manager.Condition.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.Condition.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Condition.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.Condition.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
+    func select(tableName: String, functions: [WWSQLite3Manager.SelectMethod] = [], where whereConditions: WWSQLite3Manager.Condition.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.Condition.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Condition.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.Condition.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         var sql = "SELECT * FROM \(tableName)"
         
@@ -287,11 +287,11 @@ public extension WWSQLite3Manager.Database {
         var statement: OpaquePointer? = nil
         var array: [[String : Any]] = []
         
-        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
-        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
-        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
-        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
-        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
+//        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
+//        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
+//        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
+//        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
+//        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
         
         defer { sqlite3_finalize(statement) }
         

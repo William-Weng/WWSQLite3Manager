@@ -7,283 +7,325 @@
 
 import Foundation
 
+public extension WWSQLite3Manager {
+    
+    enum SQLValue {
+        
+        case int(Int)
+        case double(Double)
+        case text(String)
+        case null
+    }
+    
+    enum CompareOperator: String {
+        
+        case equal = "="
+        case notEqual = "!="
+        case greaterThan = ">"
+        case greaterThanOrEqual = ">="
+        case lessThan = "<"
+        case lessThanOrEqual = "<="
+        case like = "LIKE"
+    }
+}
+
+public extension WWSQLite3Manager {
+    
+    indirect enum WhereExpression {
+        
+        case compare(key: String, op: CompareOperator, value: SQLValue)
+        case between(key: String, from: SQLValue, to: SQLValue)
+        case notBetween(key: String, from: SQLValue, to: SQLValue)
+        case like(key: String, pattern: String, escape: Character?)
+        case notLike(key: String, pattern: String, escape: Character?)
+        case `in`(key: String, values: [SQLValue])
+        case notIn(key: String, values: [SQLValue])
+        case and(WhereExpression, WhereExpression)
+        case or(WhereExpression, WhereExpression)
+        case not(WhereExpression)
+        case group(WhereExpression)
+    }
+}
+
+extension WWSQLite3Manager.SQLValue {
+    
+    var sqlString: String {
+        switch self {
+        case .int(let value): return "\(value)"
+        case .double(let value): return "\(value)"
+        case .text(let value): return "'\(value.replacingOccurrences(of: "'", with: "''"))'"
+        case .null: return "NULL"
+        }
+    }
+}
+
+extension WWSQLite3Manager.WhereExpression {
+    
+    var sqlString: String { makeSqlString() }
+}
+
+private extension WWSQLite3Manager.WhereExpression {
+    
+    func makeSqlString() -> String {
+        
+        switch self {
+        case .between(let key, let from, let to): return "\(key) BETWEEN \(from.sqlString) AND \(to.sqlString)"
+        case .notBetween(let key, let from, let to): return "\(key) NOT BETWEEN \(from.sqlString) AND \(to.sqlString)"
+        case .like(let key, let pattern, let escape): return "\(key) LIKE \(quoted(pattern))\(escapeClause(escape))"
+        case .notLike(let key, let pattern, let escape): return "\(key) NOT LIKE \(quoted(pattern))\(escapeClause(escape))"
+        case .in(let key, let values): return "\(key) IN (\(joined(values)))"
+        case .notIn(let key, let values): return "\(key) NOT IN (\(joined(values)))"
+        case .and(let lhs, let rhs): return "\(lhs.sqlString) AND \(rhs.sqlString)"
+        case .or(let lhs, let rhs): return "\(lhs.sqlString) OR \(rhs.sqlString)"
+        case .not(let expression): return "NOT \(wrap(expression))"
+        case .group(let expression): return "(\(expression.sqlString))"
+        case .compare(let key, let op, let value): return compareAction(key: key, op: op, value: value)
+        }
+    }
+    
+    func compareAction(key: String, op: WWSQLite3Manager.CompareOperator, value: WWSQLite3Manager.SQLValue) -> String {
+        
+        if case .null = value {
+            switch op {
+            case .equal: return "\(key) IS NULL"
+            case .notEqual: return "\(key) IS NOT NULL"
+            default: return "\(key) \(op.rawValue) NULL"
+            }
+        }
+        
+        return "\(key) \(op.rawValue) \(value.sqlString)"
+    }
+    
+    func wrap(_ expression: WWSQLite3Manager.WhereExpression) -> String {
+        
+        switch expression {
+        case .compare, .between, .notBetween, .like, .notLike, .in, .notIn: return expression.sqlString
+        case .group: return expression.sqlString
+        case .and, .or, .not: return "(\(expression.sqlString))"
+        }
+    }
+    
+    func quoted(_ string: String) -> String {
+        "'\(string.replacingOccurrences(of: "'", with: "''"))'"
+    }
+    
+    func escapeClause(_ escape: Character?) -> String {
+        guard let escape else { return "" }
+        return " ESCAPE '\(escape)'"
+    }
+    
+    func joined(_ values: [WWSQLite3Manager.SQLValue]) -> String {
+        values.map(\.sqlString).joined(separator: ", ")
+    }
+}
+
 public extension WWSQLite3Manager.Condition {
     
     /// [篩選條件](https://www.fooish.com/sql/where.html)
     class Where {
         
-        var items: String = ""
-        
-        private let isNull = "IS NULL"
-        private let isNotNull = "IS NOT NULL"
-        
-        public init() {}
+        private var expression: WWSQLite3Manager.WhereExpression?
+                
+        public required init() {}
     }
 }
 
-// MARK: - Where
 public extension WWSQLite3Manager.Condition.Where {
     
-    /// id >= 3
-    func isCompare(type: WWSQLite3Manager.CompareType) -> Self {
-        self.items += " \(combineCompareString(type: type))"
+    var sqlString: String {
+        guard let expression else { return "" }
+        return "WHERE \(expression.sqlString)"
+    }
+}
+
+public extension WWSQLite3Manager.Condition.Where {
+    
+    @discardableResult
+    func compare(_ key: String, _ op: WWSQLite3Manager.CompareOperator, _ value: WWSQLite3Manager.SQLValue) -> Self {
+        expression = .compare(key: key, op: op, value: value)
         return self
     }
     
-    /// AND id >= 3
-    func andCompare(type: WWSQLite3Manager.CompareType) -> Self {
-        self.items += " AND \(combineCompareString(type: type))"
+    @discardableResult
+    func and(_ key: String, _ op: WWSQLite3Manager.CompareOperator, _ value: WWSQLite3Manager.SQLValue) -> Self {
+        append(.compare(key: key, op: op, value: value), with: .and)
         return self
     }
     
-    /// OR id >= 3
-    func orCompare(type: WWSQLite3Manager.CompareType) -> Self {
-        self.items += " OR \(combineCompareString(type: type))"
+    @discardableResult
+    func or(_ key: String, _ op: WWSQLite3Manager.CompareOperator, _ value: WWSQLite3Manager.SQLValue) -> Self {
+        append(.compare(key: key, op: op, value: value), with: .or)
         return self
     }
     
-    /// NOT id >= 3
-    func notCompare(type: WWSQLite3Manager.CompareType) -> Self {
-        self.items += " NOT \(combineCompareString(type: type))"
+    @discardableResult
+    func not(_ key: String, _ op: WWSQLite3Manager.CompareOperator, _ value: WWSQLite3Manager.SQLValue) -> Self {
+        append(.not(.compare(key: key, op: op, value: value)), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func between(key: String, from fromValue: WWSQLite3Manager.SQLValue, to toValue: WWSQLite3Manager.SQLValue) -> Self {
+        append(.between(key: key, from: fromValue, to: toValue), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func andBetween(key: String, from fromValue: WWSQLite3Manager.SQLValue, to toValue: WWSQLite3Manager.SQLValue) -> Self {
+        append(.between(key: key, from: fromValue, to: toValue), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func orBetween(key: String, from fromValue: WWSQLite3Manager.SQLValue, to toValue: WWSQLite3Manager.SQLValue) -> Self {
+        append(.between(key: key, from: fromValue, to: toValue), with: .or)
+        return self
+    }
+    
+    @discardableResult
+    func notBetween(key: String, from fromValue: WWSQLite3Manager.SQLValue, to toValue: WWSQLite3Manager.SQLValue) -> Self {
+        append(.notBetween(key: key, from: fromValue, to: toValue), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func like(key: String, pattern: String, escape: Character? = nil) -> Self {
+        append(.like(key: key, pattern: pattern, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func andLike(key: String, pattern: String, escape: Character? = nil) -> Self {
+        append(.like(key: key, pattern: pattern, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func orLike(key: String, pattern: String, escape: Character? = nil) -> Self {
+        append(.like(key: key, pattern: pattern, escape: escape), with: .or)
+        return self
+    }
+    
+    @discardableResult
+    func notLike(key: String, pattern: String, escape: Character? = nil) -> Self {
+        append(.notLike(key: key, pattern: pattern, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func andNotLike(key: String, condition: String, escape: Character? = nil) -> Self {
+        append(.notLike(key: key, pattern: condition, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func orNotLike(key: String, condition: String, escape: Character? = nil) -> Self {
+        append(.notLike(key: key, pattern: condition, escape: escape), with: .or)
+        return self
+    }
+    
+    @discardableResult
+    func `in`(key: String, values: [WWSQLite3Manager.SQLValue]) -> Self {
+        append(.in(key: key, values: values), with: .and)
+        return self
+    }
+
+    @discardableResult
+    func andIn(key: String, values: [WWSQLite3Manager.SQLValue]) -> Self {
+        append(.in(key: key, values: values), with: .and)
+        return self
+    }
+
+    @discardableResult
+    func orIn(key: String, values: [WWSQLite3Manager.SQLValue]) -> Self {
+        append(.in(key: key, values: values), with: .or)
+        return self
+    }
+
+    @discardableResult
+    func notIn(key: String, values: [WWSQLite3Manager.SQLValue]) -> Self {
+        append(.notIn(key: key, values: values), with: .and)
+        return self
+    }
+
+    @discardableResult
+    func andNotIn(key: String, values: [WWSQLite3Manager.SQLValue]) -> Self {
+        append(.notIn(key: key, values: values), with: .and)
+        return self
+    }
+
+    @discardableResult
+    func orNotIn(key: String, values: [WWSQLite3Manager.SQLValue]) -> Self {
+        append(.notIn(key: key, values: values), with: .or)
+        return self
+    }
+    
+    @discardableResult
+    func contains(key: String, _ text: String, escape: Character? = "\\") -> Self {
+        let pattern = "%\(escapeLikePattern(text, escape: escape))%"
+        append(.like(key: key, pattern: pattern, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func startsWith(key: String, _ text: String, escape: Character? = "\\") -> Self {
+        let pattern = "\(escapeLikePattern(text, escape: escape))%"
+        append(.like(key: key, pattern: pattern, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func endsWith(key: String, _ text: String, escape: Character? = "\\") -> Self {
+        let pattern = "%\(escapeLikePattern(text, escape: escape))"
+        append(.like(key: key, pattern: pattern, escape: escape), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func andGroup(_ builder: (WWSQLite3Manager.Condition.Where) -> WWSQLite3Manager.Condition.Where) -> Self {
+        let groupWhere = builder(.init())
+        guard let groupExpression = groupWhere.expression else { return self }
+        append(.group(groupExpression), with: .and)
+        return self
+    }
+    
+    @discardableResult
+    func orGroup(_ builder: (WWSQLite3Manager.Condition.Where) -> WWSQLite3Manager.Condition.Where) -> Self {
+        let groupWhere = builder(.init())
+        guard let groupExpression = groupWhere.expression else { return self }
+        append(.group(groupExpression), with: .or)
         return self
     }
 }
 
-// MARK: - BETWEEN AND
-public extension WWSQLite3Manager.Condition.Where {
-
-    /// height BETWEEN 170 AND 180
-    func between(key: String, from fromValue: Any, to toValue: Any) -> Self {
-        self.items += " \(combineBetweenString(key: key, from: fromValue, to: toValue))"
-        return self
+private extension WWSQLite3Manager.Condition.Where {
+    
+    enum JoinType {
+        case and
+        case or
     }
     
-    /// and height BETWEEN 170 AND 180
-    func andBetween(key: String, from fromValue: Any, to toValue: Any) -> Self {
-        self.items += " AND \(combineBetweenString(key: key, from: fromValue, to: toValue))"
-        return self
-    }
-    
-    /// or height BETWEEN 170 AND 180
-    func orBetween(key: String, from fromValue: Any, to toValue: Any) -> Self {
-        self.items += " OR \(combineBetweenString(key: key, from: fromValue, to: toValue))"
-        return self
-    }
-    
-    /// not height BETWEEN 170 AND 180
-    func notBetween(key: String, from fromValue: Any, to toValue: Any) -> Self {
-        self.items += " NOT \(combineBetweenString(key: key, from: fromValue, to: toValue))"
-        return self
-    }
-}
-
-// MARK: - NULL
-public extension WWSQLite3Manager.Condition.Where {
-
-    /// image IS NULL
-    func isNull(key: String) -> Self {
-        self.items += " \(combineIsNullString(key: key))"
-        return self
-    }
-    
-    /// image IS NOT NULL
-    func isNotNull(key: String) -> Self {
-        self.items += " \(combineIsNotNullString(key: key))"
-        return self
-    }
-    
-    /// AND image IS NULL
-    func andIsNull(key: String) -> Self {
-        self.items += " AND \(combineIsNullString(key: key))"
-        return self
-    }
-    
-    /// AND image IS NOT NULL
-    func andIsNotNull(key: String) -> Self {
-        self.items += " AND \(combineIsNotNullString(key: key))"
-        return self
-    }
-}
-
-// MARK: - LIKE
-public extension WWSQLite3Manager.Condition.Where {
-
-    func like(key: String, condition: String) -> Self {
-        self.items += " \(combineLikeString(key: key, condition: condition))"
-        return self
-    }
-    
-    func notLike(key: String, condition: String) -> Self {
-        self.items += " \(combineNotLikeString(key: key, condition: condition))"
-        return self
-    }
-
-    func andLike(key: String, condition: String) -> Self {
-        self.items += " AND \(combineLikeString(key: key, condition: condition))"
-        return self
-    }
-    
-    func andNotLike(key: String, condition: String) -> Self {
-        self.items += " AND \(combineNotLikeString(key: key, condition: condition))"
-        return self
-    }
-}
-
-// MARK: - IN
-public extension WWSQLite3Manager.Condition.Where {
-
-    /// name IN ('Ana','Ben', 'Curry')
-    func `in`(key: String, values: [Any]) -> Self {
-        self.items += " \(combineInString(key: key, values: values))"
-        return self
-    }
-    
-    /// name NOT IN ('Ana','Ben', 'Curry')
-    func notIn(key: String, values: [Any]) -> Self {
-        self.items += " \(combineNotInString(key: key, values: values))"
-        return self
-    }
-    
-    /// name IN ('Ana','Ben', 'Curry')
-    func andIn(key: String, values: [Any]) -> Self {
-        self.items += " AND \(combineInString(key: key, values: values))"
-        return self
-    }
-    
-    /// AND name NOT IN ('Ana','Ben', 'Curry')
-    func andNotIn(key: String, values: [Any]) -> Self {
-        self.items += " AND \(combineNotInString(key: key, values: values))"
-        return self
-    }
-}
-
-// MARK: - 小工具
-public extension WWSQLite3Manager.Condition.Where {
-
-    /// 組合比較用字串 => id >= 3
-    /// - Parameters:
-    ///   - type: SQLite3Condition.CompareType
-    /// - Returns: String
-    func combineCompareString(type: WWSQLite3Manager.CompareType) -> String {
+    func append(_ rhs: WWSQLite3Manager.WhereExpression, with joinType: JoinType) {
         
-        let info = parseCompareTypeInfo(type)
-        let sql = "\(info.key) \(info.symbol) \(fixSqlValue(info.value))"
+        guard let lhs = expression else { expression = rhs; return }
         
-        return sql
-    }
-    
-    /// 解析SQLite3Condition.CompareType
-    /// - Parameter type: SQLite3Condition.CompareType
-    /// - Returns: CompareType
-    func parseCompareTypeInfo(_ type: WWSQLite3Manager.CompareType) -> WWSQLite3Manager.CompareValue {
-        
-        let key: String
-        let value: Any
-        
-        switch type {
-        case .equal(let _key, let _value): key = _key; value = _value
-        case .greaterThan(let _key, let _value): key = _key; value = _value
-        case .greaterOrEqual(let _key, let _value): key = _key; value = _value
-        case .lessThan(let _key, let _value): key = _key; value = _value
-        case .lessOrEqual(let _key, let _value): key = _key; value = _value
-        case .notEqual(let _key, let _value): key = _key; value = _value
+        switch joinType {
+        case .and: expression = .and(lhs, rhs)
+        case .or: expression = .or(lhs, rhs)
         }
+    }
+    
+    func escapeLikePattern(_ string: String, escape: Character?) -> String {
         
-        return (key: key, symbol: type.symbol(), value: value)
-    }
-    
-    /// 組合數值範圍用字串 => height BETWEEN 170 AND 180
-    /// - Parameters:
-    ///   - key: 欄位
-    ///   - fromValue: 數值最小值
-    ///   - toValue: 數值最大值
-    /// - Returns: String
-    func combineBetweenString(key: String, from fromValue: Any, to toValue: Any) -> String {
-        let sql = "\(key) BETWEEN \(fixSqlValue(fromValue)) AND \(fixSqlValue(toValue))"
-        return sql
-    }
-    
-    /// 組合IS NULL用字串 => image IS NULL
-    /// - Parameter key: 欄位
-    /// - Returns: String
-    func combineIsNullString(key: String) -> String {
-        let sql = "\(key) IS NULL"
-        return sql
-    }
-    
-    /// 組合IS NOT NULL用字串 => image IS NOT NULL
-    /// - Parameter key: 欄位
-    /// - Returns: String
-    func combineIsNotNullString(key: String) -> String {
-        let sql = "\(key) IS NOT NULL"
-        return sql
-    }
-    
-    /// 組合LIKE用字串 => name LIKE 'Will%'
-    /// - Parameters:
-    ///   - key: String
-    ///   - condition: String
-    /// - Returns: String
-    func combineLikeString(key: String, condition: String) -> String {
-        let sql = "\(key) LIKE \(fixSqlValue(condition))"
-        return sql
-    }
-    
-    /// 組合NOT LIKE用字串 => name NOT LIKE 'Will%'
-    /// - Parameters:
-    ///   - key: String
-    ///   - condition: String
-    /// - Returns: String
-    func combineNotLikeString(key: String, condition: String) -> String {
-        let sql = "\(key) NOT LIKE \(fixSqlValue(condition))"
-        return sql
-    }
-    
-    /// 組合IN用字串 => name IN ('William', 'Curry', 'Ann')
-    /// - Parameters:
-    ///   - key: String
-    ///   - condition: String
-    ///   - values: [Any]
-    /// - Returns: String
-    func combineInString(key: String, values: [Any]) -> String {
+        guard let escape else { return string }
         
-        let items = values.map { "\(fixSqlValue($0))" }.joined(separator: ", ")
-        let sql = "\(key) IN (\(items))"
+        let escapeString = String(escape)
         
-        return sql
-    }
-    
-    /// 組合NOT IN用字串 => name IN ('William', 'Curry', 'Ann')
-    /// - Parameters:
-    ///   - key: String
-    ///   - condition: String
-    ///   - values: [Any]
-    /// - Returns: String
-    func combineNotInString(key: String, values: [Any]) -> String {
-        
-        let items = values.map { "\(fixSqlValue($0))" }.joined(separator: ", ")
-        let sql = "\(key) NOT IN (\(items))"
-        
-        return sql
-    }
-    
-    /// 簡單測試 => String or Number
-    /// - Parameter value: Any
-    func cheackNumber(_ value: Any) -> Bool {
-        let isNumber = !(value is String)
-        return isNumber
-    }
-    
-    /// 修正SQL數值 (數字: 0.8787 / 非數字: '0.8787' )
-    /// - Parameters:
-    ///   - value: Any
-    ///   - isNumber: Bool
-    /// - Returns: String
-    func fixSqlValue(_ value: Any) -> String {
-        
-        let isNumber = cheackNumber(value)
-        
-        if (!isNumber) { return "'\(value)'" }
-        return "\(value)"
+        return string
+            .replacingOccurrences(of: escapeString, with: escapeString + escapeString)
+            .replacingOccurrences(of: "%", with: escapeString + "%")
+            .replacingOccurrences(of: "_", with: escapeString + "_")
     }
 }
+
+

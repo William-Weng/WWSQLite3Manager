@@ -98,47 +98,13 @@ final class ViewController: UIViewController {
     }
     
     /// 更新資料
-    @IBAction func updateData(_ sender: UIButton) {
-        
-        guard let database = database else { displayText(sql: nil, result: "Database Update Fail."); return }
-        
-        let condition = WWSQLite3Manager.Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
-        
-        do {
-            let sql = try database.update(tableName: tableName, items: randomItems(), where: condition)
-            displayText(sql: sql, result: "")
-        } catch {
-            displayText(sql: nil, result: error)
-        }
-    }
+    @IBAction func updateData(_ sender: UIButton) {}
     
     /// 刪除資料
-    @IBAction func deleteData(_ sender: UIButton) {
-        
-        guard let database = database else { displayText(sql: nil, result: "Database Insert Fail."); return }
-        
-        let condition = WWSQLite3Manager.Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
-        
-        do {
-            let sql = try database.delete(tableName: tableName, where: condition)
-            displayText(sql: sql, result: "")
-        } catch {
-            displayText(sql: nil, result: error)
-        }
-    }
+    @IBAction func deleteData(_ sender: UIButton) {}
     
     /// 搜尋資料
-    @IBAction func selectData(_ sender: UIButton) {
-        
-        guard let database = database else { displayText(sql: nil, result: "Database Select Fail."); return }
-        
-        let condition = WWSQLite3Manager.Condition.Where().like(key: "name", condition: "William%").andCompare(type: .greaterOrEqual(key: "height", value: 165))
-        let orderBy = WWSQLite3Manager.Condition.OrderBy().item(type: .ascending(key: "height")).addItem(type: .descending(key: "time"))
-        let limit = WWSQLite3Manager.Condition.Limit().build(count: 3, offset: 5)
-        let result = database.select(tableName: tableName, type: Student.self, where: condition, orderBy: orderBy, limit: limit)
-        
-        displayText(sql: result.sql, result: result.array)
-    }
+    @IBAction func selectData(_ sender: UIButton) {}
 }
 
 // MARK: - 小工具
