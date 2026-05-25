@@ -160,8 +160,8 @@ private extension SQLite3Condition.Where {
     
     /// 解析SQLite3Condition.CompareType
     /// - Parameter type: SQLite3Condition.CompareType
-    /// - Returns: Constant.CompareType
-    func parseCompareTypeInfo(_ type: SQLite3Condition.CompareType) -> Constant.CompareType {
+    /// - Returns: CompareType
+    func parseCompareTypeInfo(_ type: SQLite3Condition.CompareType) -> WWSQLite3Manager.CompareType {
         
         let key: String
         let value: Any

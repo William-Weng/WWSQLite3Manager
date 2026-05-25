@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "WWSQLite3Manager",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v16)
     ],
     products: [.library(name: "WWSQLite3Manager", targets: ["WWSQLite3Manager"]),
     ],

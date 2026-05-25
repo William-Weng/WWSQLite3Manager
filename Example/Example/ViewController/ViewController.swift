@@ -16,7 +16,7 @@ final class ViewController: UIViewController {
     private let databaseName = "sqlite3.db"
     private let tableName = "students"
     
-    private var database: SQLite3Database?
+    private var database: WWSQLite3Manager.Database?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +25,7 @@ final class ViewController: UIViewController {
     /// 連接資料庫
     @IBAction func connentDatabase(_ sender: UIBarButtonItem) {
         
-        let result = WWSQLite3Manager.shared.connect(for: .documents, filename: databaseName)
+        let result = WWSQLite3Manager.shared.connect(for: .documentsDirectory, filename: databaseName)
         
         switch result {
         case .failure(let error):
@@ -39,44 +39,54 @@ final class ViewController: UIViewController {
     /// 關閉資料庫
     @IBAction func closeDatabase(_ sender: UIBarButtonItem) {
         
-        guard let database = database,
-              database.close()
-        else {
-            displayText(sql: nil, result: "Database Close Fail."); return
-        }
+        guard let database = database else { return }
         
-        displayText(sql: nil, result: "Database Close Success.")
+        do {
+            try database.close()
+        } catch {
+            displayText(sql: nil, result: error)
+        }
     }
     
     /// 刪除資料表
     @IBAction func dropTable(_ sender: UIBarButtonItem) {
         
-        guard let database = database else { displayText(sql: nil, result: "Database Drop Fail."); return }
+        guard let database = database else { return }
         
-        let result = database.drop(tableName: tableName)
-        displayText(sql: result.sql, result: result.isSussess)
+        do {
+            let sql = try database.drop(tableName: tableName)
+            displayText(sql: sql, result: "")
+        } catch {
+            displayText(sql: nil, result: error)
+        }
     }
     
     /// 建立資料表
     @IBAction func createTable(_ sender: UIBarButtonItem) {
         
-        guard let database = database else { displayText(sql: nil, result: "Database Create Fail."); return }
+        guard let database = database else { return }
         
-        let result = database.create(tableName: tableName, type: Student.self, isOverwrite: false)
-        displayText(sql: result.sql, result: result.isSussess)
+        do {
+            let sql = try database.create(tableName: tableName, type: Student.self)
+            displayText(sql: sql, result: "")
+        } catch {
+            displayText(sql: nil, result: error)
+        }
     }
     
     /// 資料表插入數據
     @IBAction func insertData(_ sender: UIButton) {
         
-        guard let database = database,
-              let itemsArray = Optional.some((1...5).map { _ in randomItems() }),
-              let result = database.insert(tableName: tableName, itemsArray: itemsArray)
-        else {
-            displayText(sql: nil, result: "Database Insert Fail."); return
-        }
+        guard let database = database else { return }
         
-        displayText(sql: result.sql, result: result.isSussess)
+        let itemsArray = (1...5).map { _ in randomItems() }
+        
+        do {
+            let sql = try database.insert(tableName: tableName, itemsArray: itemsArray)
+            displayText(sql: sql, result: "")
+        } catch {
+            displayText(sql: nil, result: error)
+        }
     }
     
     /// 資料表的屬性
@@ -94,9 +104,13 @@ final class ViewController: UIViewController {
         guard let database = database else { displayText(sql: nil, result: "Database Update Fail."); return }
         
         let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
-        let result = database.update(tableName: tableName, items: randomItems(), where: condition)
         
-        displayText(sql: result.sql, result: result.isSussess)
+        do {
+            let sql = try database.update(tableName: tableName, items: randomItems(), where: condition)
+            displayText(sql: sql, result: "")
+        } catch {
+            displayText(sql: nil, result: error)
+        }
     }
     
     /// 刪除資料
@@ -105,9 +119,13 @@ final class ViewController: UIViewController {
         guard let database = database else { displayText(sql: nil, result: "Database Insert Fail."); return }
         
         let condition = SQLite3Condition.Where().isCompare(type: .equal(key: "id", value: "1"))
-        let result = database.delete(tableName: tableName, where: condition)
         
-        displayText(sql: result.sql, result: result.isSussess)
+        do {
+            let sql = try database.delete(tableName: tableName, where: condition)
+            displayText(sql: sql, result: "")
+        } catch {
+            displayText(sql: nil, result: error)
+        }
     }
     
     /// 搜尋資料
@@ -136,9 +154,9 @@ private extension ViewController {
     
     /// 測試用數據
     /// - Returns: [SQLite3Database.InsertItem]
-    func randomItems() -> [SQLite3Database.InsertItem] {
+    func randomItems() -> [WWSQLite3Manager.InsertItem] {
         
-        let items: [SQLite3Database.InsertItem] = [
+        let items: [WWSQLite3Manager.InsertItem] = [
             (key: "name", value: "William_\(Int.random(in: 0...100))"),
             (key: "height", value: 160.0 + Float.random(in: 0...20)),
         ]

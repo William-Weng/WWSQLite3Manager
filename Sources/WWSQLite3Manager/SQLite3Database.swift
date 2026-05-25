@@ -10,149 +10,168 @@ import Foundation
 import SQLite3
 
 // MARK: - 執行資料庫的功能
-public struct SQLite3Database {
-        
-    public let fileURL: URL
-    public let database: OpaquePointer
-}
-
-// MARK: - typealias
-public extension SQLite3Database {
+public extension WWSQLite3Manager {
     
-    typealias ExecuteResult = (sql: String, isSussess: Bool)
-    typealias SelectResult = (sql: String, array: [[String: Any]])
-    typealias SelectDistinctResult = (sql: String, array: [Any])
-    typealias InsertItem = (key: String, value: Any)
-}
-
-// MARK: - enum
-public extension SQLite3Database {
-    
-    enum TransactionType: String {
-        case begin = "BEGIN"
-        case commit = "COMMIT"
-        case rollback = "ROLLBACK"
+    struct Database {
+        public let fileURL: URL
+        public let database: OpaquePointer
     }
 }
 
 // MARK: - 直讀SQL
-public extension SQLite3Database {
+public extension WWSQLite3Manager.Database {
     
     /// [直讀SQL](https://www.1keydata.com/tw/sql/sqlcreate.html)
-    /// - CREATE TABLE IF NOT EXISTS students (id INTEGER DEFAULT 1, name TEXT, height REAL, image BLOB, time TEXT)
+    ///
+    /// CREATE TABLE IF NOT EXISTS students (id INTEGER DEFAULT 1, name TEXT, height REAL, image BLOB, time TEXT)
+    ///
     /// - Parameter sql: [SQL語句](https://www.runoob.com/sql/sql-syntax.html)
-    /// - Returns: [Bool](https://www.w3school.com.cn/sql/sql_syntax.asp)
-    func execute(sql: String) -> Bool {
-        return sqlite3_exec(database, sql.cString(using: .utf8), nil, nil, nil) == SQLITE_OK
+    /// - Throws: [CustomError](https://www.w3school.com.cn/sql/sql_syntax.asp)
+    func execute(sql: String) throws {
+        let code = sqlite3_exec(database, sql.cString(using: .utf8), nil, nil, nil)
+        guard code == SQLITE_OK else { throw makeError(.execute, code: code) }
     }
-        
+    
     /// [執行SQL語句 => 直讀SQL](https://www.1keydata.com/tw/sql/sql.html)
-    /// - INSERT INTO students ('name', 'height') VALUES ('William', '178.87') / UPDATE students SET name='小胖' WHERE id = 1
+    ///
+    /// INSERT INTO students ('name', 'height') VALUES ('William', '178.87') / UPDATE students SET name='小胖' WHERE id = 1
+    ///
     /// - Parameter sql: [SQL語句](https://www.sqlitetutorial.net/)
-    /// - Returns: Bool
-    func prepare(sql: String) -> Bool {
+    /// - Throws: CustomError
+    func prepare(sql: String) throws {
         
         var statement: OpaquePointer? = nil
-        
         defer { sqlite3_finalize(statement) }
         
-        if (sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil) == SQLITE_OK) {
-            if (sqlite3_step(statement) == SQLITE_DONE) { return true }
-        }
+        let prepareCode = sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
         
-        return false
+        let stepCode = sqlite3_step(statement)
+        guard stepCode == SQLITE_DONE else { throw makeError(.step, code: stepCode) }
     }
     
     /// [執行SELECT SQL](http://jengting.blogspot.com/2014/04/sql-where-having.html)
-    /// - SELECT * FROM students GROUP BY height, id HAVING height > 175
+    ///
+    /// SELECT * FROM students GROUP BY height, id HAVING height > 175
+    ///
     /// - Parameters:
     ///   - sql: [String](http://sqlqna.blogspot.com/2018/03/havingif-else.html)
     ///   - result: ((OpaquePointer?) -> Void)
-    ///   - completion: ((Bool) -> Void))
-    func select(sql: String, result: ((OpaquePointer?) -> Void), completion: ((Bool) -> Void)) {
+    /// - Throws: CustomError
+    func select(sql: String, result: ((OpaquePointer?) -> Void)) throws {
         
         var statement: OpaquePointer? = nil
-        defer { completion(true); sqlite3_finalize(statement) }
+        defer { sqlite3_finalize(statement) }
         
-        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
-        while sqlite3_step(statement) == SQLITE_ROW { result(statement) }
+        let prepareCode = sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
+        
+        while true {
+            
+            let stepCode = sqlite3_step(statement)
+            
+            switch stepCode {
+            case SQLITE_ROW: result(statement)
+            case SQLITE_DONE: return
+            default: throw makeError(.step, code: stepCode)
+            }
+        }
     }
     
     /// [關閉SQLite連線](https://www.sqlite.org/c3ref/close.html)
-    /// - Returns: Bool
-    func close() -> Bool { return sqlite3_close_v2(database) == SQLITE_OK }
+    /// - Throws: CustomError
+    func close() throws {
+        
+        let code = sqlite3_close_v2(database)
+        guard code == SQLITE_OK else { throw makeError(.close, code: code) }
+    }
 }
 
 // MARK: - 公開的function
-public extension SQLite3Database {
-    
+public extension WWSQLite3Manager.Database {
+
     /// 取得該Table的結構組成
     /// - PRAGMA TABLE_INFO(students)
     /// - Parameter tableName: String
     /// - Returns: SelectResult
-    func tableScheme(tableName: String) -> SelectResult {
+    func tableScheme(tableName: String) -> WWSQLite3Manager.SelectResult {
         return tableInfomation(tableName: tableName, type: SQLite3TableSchemeInfomation.self)
     }
     
-    /// [建立Table](http://tw.gitbook.net/sqlite/sqlite_create_table.html)
-    /// - CREATE TABLE IF NOT EXISTS students (id INTEGER DEFAULT 1, name TEXT, height REAL, image BLOB, time TEXT)
+    /// [建立資料表](https://www.sqlitetutorial.net/sqlite-create-table/)
+    /// - CREATE TABLE IF NOT EXISTS "students" ("id" INTEGER DEFAULT 1, "name" TEXT, "height" REAL, "image" BLOB, "time" TEXT, PRIMARY KEY ("id"))
     /// - Parameters:
-    ///   - tableName: [String](https://www.1keydata.com/tw/sql/sqlcreate.html)
-    ///   - type: [SQLite3SchemeDelegate.Type](https://www.runoob.com/sql/sql-syntax.html)
-    ///   - primaryKeys: [複合主鍵](https://blog.csdn.net/smartfox80/article/details/44619749)
-    ///   - isOverwrite: [Bool - 是否要覆蓋過去？](https://www.w3school.com.cn/sql/sql_syntax.asp)
-    /// - Returns: ExecuteResult
-    func create(tableName: String, type: SQLite3SchemeDelegate.Type, primaryKeys: [String?] = [], isOverwrite: Bool = false) -> ExecuteResult {
+    ///   - tableName: 資料表名稱。
+    ///   - type: 資料表結構定義型別。
+    ///   - primaryKeys: 主鍵欄位名稱陣列，可用於單一主鍵或複合主鍵。
+    ///   - ifNotExists: 是否只在資料表不存在時才建立；`true` 時使用 `CREATE TABLE IF NOT EXISTS`。
+    /// - Throws: `WWSQLite3Manager.CustomError`
+    /// - Returns: 最終執行的 SQL 字串。
+    /// - Note:
+    ///   - `type.structure()` 應回傳欄位名稱與對應 SQLite 型別。
+    ///   - 若 `primaryKeys` 為空，預設會嘗試使用第一個欄位作為主鍵。
+    ///   - 若有多個主鍵欄位，會建立複合主鍵，例如 `PRIMARY KEY ("id", "name")`。
+    @discardableResult
+    func create(tableName: String, type: SQLite3SchemeDelegate.Type, primaryKeys: [String?] = [], ifNotExists: Bool = false) throws -> String {
         
-        let fields = type.structure().map { (key, type) in return "\(key) \(type.toSQL())" }.joined(separator: ", ")
+        let fields = type.structure().map { key, type in "\(key.sqlIdentifier()) \(type.toSQL())" }.joined(separator: ", ")
         let keys = primaryKeys.isEmpty ? [type.structure().first?.key] : primaryKeys
-
-        var sql: String = (!isOverwrite) ? "CREATE TABLE \(tableName) (\(fields)" : "CREATE TABLE IF NOT EXISTS \(tableName) (\(fields)"
+        let name = tableName.sqlIdentifier()
+        
+        var sql = (!ifNotExists) ? "CREATE TABLE \(name) (\(fields)" : "CREATE TABLE IF NOT EXISTS \(name) (\(fields)"
         
         if let primaryKey = type.primaryKeys(keys) { sql += ", \(primaryKey)" }
         sql += ")"
         
-        let isSuccess = execute(sql: sql)
-        return (sql, isSuccess)
+        try execute(sql: sql)
+        return sql
     }
     
-    /// [刪除Table](https://www.sqlitetutorial.net/sqlite-drop-table/)
+    /// [刪除資料表](https://www.sqlitetutorial.net/sqlite-drop-table/)
     /// - Parameters:
-    ///   - tableName: String
-    ///   - isOverwrite: [Bool - 是否要覆蓋過去？](https://www.runoob.com/sqlite/sqlite-drop-table.html)
-    /// - Returns: ExecuteResult
-    func drop(tableName: String, isOverwrite: Bool = false) -> ExecuteResult {
+    ///   - tableName: 資料表名稱
+    ///   - ifExists: 是否只在資料表存在時才刪除；`true` 時可避免資料表不存在時發生錯誤。
+    /// - Throws: CustomError
+    /// - Returns: 最終執行的 SQL
+    @discardableResult
+    func drop(tableName: String, ifExists: Bool = false) throws -> String {
         
-        let sql: String = (!isOverwrite) ? "DROP TABLE \(tableName)" : "DROP TABLE IF NOT EXISTS \(tableName)"
-        let isSuccess = execute(sql: sql)
+        let name = tableName.sqlIdentifier()
+        let sql = (!ifExists) ? "DROP TABLE \(name)" : "DROP TABLE IF EXISTS \(name)"
         
-        return (sql, isSuccess)
+        try execute(sql: sql)
+        return sql
     }
     
     /// [事務處理](https://www.itread01.com/p/398053.html)
     /// - Parameter type: TransactionType
     /// - Returns: Bool
-    func transaction(type: TransactionType) -> ExecuteResult {
-
-        let sql = "\(type.rawValue) TRANSACTION"
-        let isSuccess = execute(sql: sql)
+    @discardableResult
+    func transaction(type: WWSQLite3Manager.TransactionType) throws -> String {
         
-        return (sql, isSuccess)
+        let sql = "\(type.rawValue) TRANSACTION"
+        try execute(sql: sql)
+        
+        return sql
     }
 }
 
 // MARK: - CRUD
-public extension SQLite3Database {
-        
+public extension WWSQLite3Manager.Database {
+
     /// [插入資料](https://www.1keydata.com/tw/sql/sqlinsert.html)
-    /// - INSERT INTO students ('name', 'height') VALUES ('William', '178.87'), ('Curry', '196.38')
+    ///
+    /// NSERT INTO students ('name', 'height') VALUES ('William', '178.87'), ('Curry', '196.38')
+    ///
     /// - Parameters:
     ///   - tableName: [String](https://www.fooish.com/sql/insert-into.html)
     ///   - itemsArray: [[InsertItem]]
-    /// - Returns: ExecuteResult?
-    func insert(tableName: String, itemsArray: [[InsertItem]]) -> ExecuteResult? {
-        
-        guard let keys = itemsArray.first?.map({ $0.key }).joined(separator: ", ") else { return nil }
+    /// - Throws: CustomError
+    /// - Returns: String
+    @discardableResult
+    func insert(tableName: String, itemsArray: [[WWSQLite3Manager.InsertItem]]) throws -> String {
+                
+        guard let keys = itemsArray.first?.map({ $0.key }).joined(separator: ", ") else { throw WWSQLite3Manager.CustomError.missingItems }
         
         let values = itemsArray.map { items -> String in
             let values = items.map({ "'\($1)'" }).joined(separator: ", ")
@@ -160,9 +179,9 @@ public extension SQLite3Database {
         }.joined(separator: ", ")
         
         let sql = "INSERT INTO \(tableName) (\(keys)) VALUES \(values)"
-        let isSuccess = prepare(sql: sql)
+        let isSuccess = try prepare(sql: sql)
         
-        return (sql, isSuccess)
+        return sql
     }
     
     /// [更新資料](https://www.1keydata.com/tw/sql/sqlupdate.html)
@@ -171,16 +190,18 @@ public extension SQLite3Database {
     ///   - tableName: String
     ///   - items: [String: String]
     ///   - whereConditions: SQLite3Condition.Where?
-    /// - Returns: ExecuteResult
-    func update(tableName: String, items: [InsertItem], where whereConditions: SQLite3Condition.Where?) -> ExecuteResult {
+    /// - Throws: CustomError
+    /// - Returns: String
+    @discardableResult
+    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: SQLite3Condition.Where?) throws -> String {
         
         let _items = items.map { "\($0) = '\($1)'" }.joined(separator: ", ")
         var sql = "UPDATE \(tableName) SET \(_items)"
         
         if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
-        let isSuccess = prepare(sql: sql)
+        let isSuccess = try prepare(sql: sql)
         
-        return (sql, isSuccess)
+        return sql
     }
     
     /// [刪除資料](https://www.1keydata.com/tw/sql/sqldelete.html)
@@ -188,15 +209,17 @@ public extension SQLite3Database {
     /// - Parameters:
     ///   - tableName: String
     ///   - whereConditions: SQLite3Condition.Where
+    /// - Throws: CustomError
     /// - Returns: ExecuteResult
-    func delete(tableName: String, where whereConditions: SQLite3Condition.Where?) -> ExecuteResult {
+    @discardableResult
+    func delete(tableName: String, where whereConditions: SQLite3Condition.Where?) throws -> String {
         
         var sql = "DELETE FROM \(tableName)"
+        
         if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
+        try prepare(sql: sql)
         
-        let isSuccess = prepare(sql: sql)
-        
-        return (sql, isSuccess)
+        return sql
     }
     
     /// [查詢資訊](https://www.1keydata.com/tw/sql/sqlselect.html)
@@ -210,7 +233,7 @@ public extension SQLite3Database {
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
+    func select(tableName: String, type: SQLite3SchemeDelegate.Type, where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         let fields = type.structure().map { $0.key }.joined(separator: ", ")
         
@@ -252,7 +275,7 @@ public extension SQLite3Database {
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> SelectResult {
+    func select(tableName: String, functions: [SQLite3Method.SelectFunction] = [], where whereConditions: SQLite3Condition.Where? = nil, groupBy groupByConditions: SQLite3Condition.GroupBy? = nil, having havingConditions: SQLite3Condition.Having? = nil, orderBy orderByConditions: SQLite3Condition.OrderBy? = nil, limit limitConditions: SQLite3Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         var sql = "SELECT * FROM \(tableName)"
         
@@ -290,14 +313,14 @@ public extension SQLite3Database {
 }
 
 // MARK: - 小工具
-private extension SQLite3Database {
+private extension WWSQLite3Manager.Database {
     
     /// [取得該Table的結構組成](https://stackoverflow.com/questions/39824274/sqlite-pragma-table-infotable-not-returning-column-names-using-data-sqlite-in)
     /// - Parameters:
     ///   - tableName: String
     ///   - type: SQLite3SchemeDelegate.Type
     /// - Returns: SelectResult
-    func tableInfomation(tableName: String, type: SQLite3SchemeDelegate.Type) -> SelectResult {
+    func tableInfomation(tableName: String, type: SQLite3SchemeDelegate.Type) -> WWSQLite3Manager.SelectResult {
         
         let sql = "PRAGMA TABLE_INFO(\(tableName))"
         
@@ -320,5 +343,57 @@ private extension SQLite3Database {
         }
         
         return (sql, array)
+    }
+    
+    /// 將值轉成 SQLite 可用的字串
+    /// - Parameter value: 任意型別的欄位值
+    /// - Returns: 可直接拼接到 SQL 的字串
+    func sqlValue(_ value: Any?) -> String {
+        
+        guard let value else { return "NULL" }
+        
+        switch value {
+        
+        /* Bool */
+        case let bool as Bool: return bool ? "1" : "0"
+            
+        /* SignedInteger */
+        case let number as Int: return "\(number)"
+        case let number as Int8: return "\(number)"
+        case let number as Int16: return "\(number)"
+        case let number as Int32: return "\(number)"
+        case let number as Int64: return "\(number)"
+            
+        /* UnsignedInteger */
+        case let number as UInt: return "\(number)"
+        case let number as UInt8: return "\(number)"
+        case let number as UInt16: return "\(number)"
+        case let number as UInt32: return "\(number)"
+        case let number as UInt64: return "\(number)"
+            
+        /* BinaryFloatingPoint */
+        case let number as Float: return "\(number)"
+        case let number as Double: return "\(number)"
+            
+        /* String */
+        case let text as String:
+            let escaped = text.replacingOccurrences(of: "'", with: "''")
+            return "'\(escaped)'"
+            
+        default:
+            let escaped = "\(value)".replacingOccurrences(of: "'", with: "''")
+            return "'\(escaped)'"
+        }
+    }
+    
+    /// 建立 SQLite 錯誤
+    /// - Parameters:
+    ///   - operation: 發生錯誤的 SQLite 操作階段。
+    ///   - code: SQLite 回傳的錯誤碼。
+    /// - Returns: `WWSQLite3Manager.CustomError`
+    func makeError(_ operation: WWSQLite3Manager.Operation, code: Int32) -> WWSQLite3Manager.CustomError {
+        
+        let message = sqlite3_errmsg(database).flatMap { String(cString: $0) } ?? "No SQLite error message."
+        return .sqlite(operation: operation, code: code, message: message)
     }
 }

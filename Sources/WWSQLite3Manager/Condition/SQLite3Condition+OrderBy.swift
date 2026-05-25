@@ -40,8 +40,8 @@ private extension SQLite3Condition.OrderBy {
     
     /// 解析SQLite3Condition.OrderByType
     /// - Parameter type: SQLite3Condition.OrderByType
-    /// - Returns: Constant.OrderType
-    func parseOrderByTypeInfo(_ type: SQLite3Condition.OrderByType) -> Constant.OrderType {
+    /// - Returns: OrderType
+    func parseOrderByTypeInfo(_ type: SQLite3Condition.OrderByType) -> WWSQLite3Manager.OrderType {
         
         let key: String
         let symbol = type.symbol()

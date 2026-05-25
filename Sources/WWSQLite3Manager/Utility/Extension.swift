@@ -70,6 +70,23 @@ extension OpaquePointer {
     }
 }
 
+// MARK: - String
+extension String {
+    
+    /// 轉成 SQLite 可用的 identifier
+    /// - Returns: 已使用雙引號包裹，且將內部雙引號轉義後的字串。
+    /// - Note:
+    ///   - 適用於資料表名稱、欄位名稱等 SQL identifier。
+    ///   - SQLite / SQL 慣例中，identifier 使用雙引號包裹，
+    ///     例如：`"students"`、`"user name"`。
+    ///   - 若名稱本身包含雙引號，需以兩個雙引號表示，
+    ///     例如：`my"name` 會轉成 `"my""name"`。
+    ///   - 這個方法不適用於字串值；字串值應使用單引號並處理單引號跳脫。
+    func sqlIdentifier() -> String {
+        return "\"\(replacingOccurrences(of: "\"", with: "\"\""))\""
+    }
+}
+
 // MARK: - Collection (override function)
 extension Collection {
 
@@ -88,19 +105,4 @@ extension Array {
             forEach(index, object, self)
         }
     }
-}
-
-// MARK: - FileManager (function)
-extension FileManager {
-    
-    /// User的「暫存」資料夾
-    /// - => ~/tmp/
-    /// - Returns: URL
-    func _temporaryDirectory() -> URL { return self.temporaryDirectory }
-    
-    /// [取得User的資料夾](https://cdfq152313.github.io/post/2016-10-11/)
-    /// - UIFileSharingEnabled = YES => iOS設置iTunes文件共享
-    /// - Parameter directory: User的資料夾名稱
-    /// - Returns: [URL]
-    func _userDirectory(for directory: FileManager.SearchPathDirectory) -> [URL] { return Self.default.urls(for: directory, in: .userDomainMask) }
 }
