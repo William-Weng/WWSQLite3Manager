@@ -24,6 +24,7 @@ final class ViewController: UIViewController {
         
         do {
             let database = try WWSQLite3Manager.shared.connect(filename: filename)
+            try database.drop(tableName: tableName)
             try database.create(tableName: tableName, type: Student.self, ifNotExists: true)
             
             self.database = database

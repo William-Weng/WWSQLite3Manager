@@ -22,7 +22,7 @@ public extension WWSQLite3Manager {
     /// [SQL WHERE 條件建構器](https://www.fooish.com/sql/where.html)
     class Where {
         
-        private var expression: WWSQLite3Manager.WhereExpression?       // 目前累積的 WHERE 條件表達式
+        private var expression: WhereExpression?       // 目前累積的 WHERE 條件表達式
                 
         public required init() {}
     }

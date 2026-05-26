@@ -13,6 +13,7 @@ import SQLite3
 public extension WWSQLite3Manager {
     
     struct Database {
+        
         public let fileURL: URL
         public let database: OpaquePointer
     }
@@ -94,8 +95,8 @@ public extension WWSQLite3Manager.Database {
     /// - PRAGMA TABLE_INFO(students)
     /// - Parameter tableName: String
     /// - Returns: SelectResult
-    func tableScheme(tableName: String) -> WWSQLite3Manager.SelectResult {
-        return tableInfomation(tableName: tableName, type: WWSQLite3Manager.TableScheme.self)
+    func scheme(tableName: String) -> WWSQLite3Manager.SelectResult {
+        return tableInformation(tableName: tableName, type: WWSQLite3Manager.TableScheme.self)
     }
     
     /// [建立資料表](https://www.sqlitetutorial.net/sqlite-create-table/)
@@ -200,39 +201,59 @@ public extension WWSQLite3Manager.Database {
         return sql
     }
     
-    /// [更新資料](https://www.1keydata.com/tw/sql/sqlupdate.html)
-    /// - UPDATE students SET name='小胖' WHERE id = 1
+    /// [執行 UPDATE 查詢](https://www.1keydata.com/tw/sql/sqlupdate.html)
+    ///
+    /// 將指定欄位值組合成 `UPDATE ... SET ...` SQL 語句，並可選擇搭配 `WHERE` 條件更新符合條件的資料列
+    ///
+    /// - Note:
+    ///   - 若 `whereConditions` 為 `nil` 或內容為空，將更新整個資料表的所有資料列
+    ///   - 字串內容會自動處理單引號跳脫
+    ///   - `nil` 會轉成 SQL 的 `NULL`
+    ///
     /// - Parameters:
-    ///   - tableName: String
-    ///   - items: [String: String]
-    ///   - whereConditions: SQLite3Condition.Where?
-    /// - Throws: CustomError
-    /// - Returns: String
+    ///   - tableName: 要更新的資料表名稱
+    ///   - items: 要更新的欄位與值
+    ///   - whereConditions: 選用的 WHERE 條件建構器
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   當 `items` 為空，或 SQL 執行失敗時拋出錯誤
     @discardableResult
-    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: WWSQLite3Manager.Where?) throws -> String {
+    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: WWSQLite3Manager.Where? = nil) throws -> String {
         
-        let _items = items.map { "\($0) = '\($1)'" }.joined(separator: ", ")
-        var sql = "UPDATE \(tableName) SET \(_items)"
+        guard !items.isEmpty else { throw WWSQLite3Manager.CustomError.missingItems }
         
-//        if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
-//        let isSuccess = try prepare(sql: sql)
+        let assignments = items.map { "\($0.key) = \(sqlValue($0.value))" }.joined(separator: ", ")
+        var sql = "UPDATE \(tableName) SET \(assignments)"
+        
+        if let whereConditions = whereConditions, !whereConditions.sqlString.isEmpty { sql += " " + whereConditions.sqlString }
+        try prepare(sql: sql)
         
         return sql
     }
     
-    /// [刪除資料](https://www.1keydata.com/tw/sql/sqldelete.html)
-    /// - DELETE FROM students WHERE id = 1
+    /// [執行 DELETE 查詢](https://www.1keydata.com/tw/sql/sqldelete.html)
+    ///
+    /// 產生 `DELETE FROM ...` SQL 語句，
+    /// 並可選擇搭配 `WHERE` 條件刪除符合條件的資料列。
+    ///
+    /// - Note:
+    ///   - 若 `whereConditions` 為 `nil` 或內容為空，將刪除整個資料表的所有資料列
+    ///   - 使用時應特別注意是否真的要省略 `WHERE` 條件
+    ///
     /// - Parameters:
-    ///   - tableName: String
-    ///   - whereConditions: SQLite3Condition.Where
-    /// - Throws: CustomError
-    /// - Returns: ExecuteResult
+    ///   - tableName: 要刪除資料的資料表名稱
+    ///   - whereConditions: 選用的 WHERE 條件建構器
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   若 SQL 執行失敗，拋出對應錯誤
     @discardableResult
-    func delete(tableName: String, where whereConditions: WWSQLite3Manager.Where?) throws -> String {
+    func delete(tableName: String, where whereConditions: WWSQLite3Manager.Where? = nil) throws -> String {
         
         var sql = "DELETE FROM \(tableName)"
         
-//        if let whereConditions = whereConditions { sql += " WHERE\(whereConditions.items)" }
+        if let whereConditions = whereConditions, !whereConditions.sqlString.isEmpty { sql += " " + whereConditions.sqlString }
         try prepare(sql: sql)
         
         return sql
@@ -243,8 +264,8 @@ public extension WWSQLite3Manager.Database {
     /// 依照 `SchemeDelegate` 定義的欄位結構，自動組合查詢欄位，並將查詢結果轉成 `[[String: Any]]` 型式回傳
     ///
     /// - Parameters:
-    ///   - tableName: 資料表名稱
-    ///   - type: 資料表結構描述型別，用來取得欄位名稱與欄位型別
+    ///   - tableName: [資料表名稱](https://www.fooish.com/sql/count-function.html)
+    ///   - type: [資料表結構描述型別，用來取得欄位名稱與欄位型別](https://www.1keydata.com/tw/sql/sqldistinct.html)
     ///   - whereConditions: 選用的 WHERE 條件建構器
     /// - Returns:
     ///   包含實際執行的 SQL 字串，以及查詢結果陣列
@@ -275,63 +296,26 @@ public extension WWSQLite3Manager.Database {
         
         return (sql, array)
     }
-    
-    /// [搜尋資料 with functions](https://www.fooish.com/sql/count-function.html)
-    /// - Parameters:
-    ///   - tableName: [資料庫](https://www.1keydata.com/tw/sql/sqldistinct.html)
-    ///   - functions: [常用函數]
-    ///   - whereConditions: Where語句
-    ///   - groupByConditions: GroupBy語句
-    ///   - havingConditions: HAVING語句
-    ///   - orderByConditions: OrderBy語句
-    ///   - limitConditions: Limit語句
-    /// - Returns: SelectResult
-    func select(tableName: String, functions: [WWSQLite3Manager.SelectMethod] = [], where whereConditions: WWSQLite3Manager.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Limit? = nil) -> WWSQLite3Manager.SelectResult {
-        
-        var sql = "SELECT * FROM \(tableName)"
-        
-        if !functions.isEmpty {
-            let funcs = functions.map { $0.sql() }.joined(separator: ", ")
-            sql = "SELECT \(funcs) FROM \(tableName)"
-        }
-        
-        var statement: OpaquePointer? = nil
-        var array: [[String : Any]] = []
-        
-//        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
-//        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
-//        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
-//        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
-//        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
-        
-        defer { sqlite3_finalize(statement) }
-        
-        sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
-        
-        while sqlite3_step(statement) == SQLITE_ROW {
-            
-            var dict: [String : Any] = [:]
-            
-            for (index, function) in functions.enumerated() {
-                dict[function.aliasName()] = statement?.value(at: Int32(index), dataType: function.dataType()) ?? nil
-            }
-            
-            array.append(dict)
-        }
-        
-        return (sql, array)
-    }
 }
 
 // MARK: - 小工具
 private extension WWSQLite3Manager.Database {
     
-    /// [取得該Table的結構組成](https://stackoverflow.com/questions/39824274/sqlite-pragma-table-infotable-not-returning-column-names-using-data-sqlite-in)
+    /// [讀取資料表欄位資訊](https://stackoverflow.com/questions/39824274/sqlite-pragma-table-infotable-not-returning-column-names-using-data-sqlite-in)
+    ///
+    /// 使用 `PRAGMA TABLE_INFO(...)` 查詢指定資料表的欄位結構，
+    /// 並依照 `SchemeDelegate` 定義的欄位型別，將結果轉成 `[String: Any]` 陣列。
+    ///
+    /// - Note:
+    ///   - `PRAGMA TABLE_INFO` 會針對資料表中的每個欄位回傳一筆資料
+    ///   - 常見欄位包含：`cid`、`name`、`type`、`notnull`、`dflt_value`、`pk`
+    ///
     /// - Parameters:
-    ///   - tableName: String
-    ///   - type: SchemeDelegate.Type
-    /// - Returns: SelectResult
-    func tableInfomation(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type) -> WWSQLite3Manager.SelectResult {
+    ///   - tableName: 要查詢欄位資訊的資料表名稱
+    ///   - type: 欄位結構描述型別，用來定義結果欄位的名稱與資料型別
+    /// - Returns:
+    ///   包含實際執行的 SQL 字串，以及欄位資訊結果陣列
+    func tableInformation(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type) -> WWSQLite3Manager.SelectResult {
         
         let sql = "PRAGMA TABLE_INFO(\(tableName))"
         
