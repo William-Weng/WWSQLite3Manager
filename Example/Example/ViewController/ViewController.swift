@@ -12,9 +12,7 @@ final class ViewController: UIViewController {
         
     private let filename = "sqlite3.db"
     private let tableName = "students"
-    
-    private var database: WWSQLite3Manager.Database!
-    
+        
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
@@ -24,10 +22,10 @@ final class ViewController: UIViewController {
         
         do {
             let database = try WWSQLite3Manager.shared.connect(filename: filename)
+            
             try database.drop(tableName: tableName)
             try database.create(tableName: tableName, type: Student.self, ifNotExists: true)
             
-            self.database = database
             print(database.fileURL)
 
             let items: [WWSQLite3Manager.InsertItem] = [

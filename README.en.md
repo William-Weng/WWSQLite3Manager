@@ -8,31 +8,33 @@
 
 [English](./README.en.md) | [繁體中文](./README.md)
 
-## 🎉 相關說明
+## 🎉 Overview
 
-一套輕量級的 Swift SQLite3 工具，讓資料表定義、CRUD、條件查詢，以及聚合查詢都更直覺、更容易維護。
-
----
-
-## ✨ 功能特色
-
-- 透過 `SchemeDelegate` 定義資料表結構，讓欄位與型別管理更明確。
-- 提供 `create`、`drop`、`insert`、`update`、`delete`、`select` 等常用操作 API。
-- 支援可鏈式組合的 `Where`、`GroupBy`、`Having`、`OrderBy`、`Limit`，讓 SQL 更容易閱讀。
-- 同時支援以 schema 為基礎的全欄位查詢，以及使用 `SelectMethod` 的自訂欄位查詢。
-- 需要較底層控制時，也可以直接執行原生 SQL。
+A lightweight SQLite3 helper for Swift that makes schema definition, CRUD, conditional queries, and aggregate selection easier to read and maintain.
 
 ---
 
-## 🧠 設計說明
+## ✨ Features
 
-這個套件的設計重點之一，是把資料表 schema 與查詢欄位投影分開。
+- Define table schema with `SchemeDelegate` for explicit and type-safe table structure management.
+- Use simple APIs for `create`, `drop`, `insert`, `update`, `delete`, and `select` operations.
+- Support chainable `Where`, `GroupBy`, `Having`, `OrderBy`, and `Limit` builders for readable SQL construction.
+- Support both schema-based full-column queries and `SelectMethod`-based custom projection queries.
+- Execute raw SQL directly when lower-level control is needed.
 
-- `SchemeDelegate.structure()` 用在建表與全欄位查詢。
-- `SelectMethod` 用在查詢階段的欄位投影，例如聚合函數與別名。
-- 比起直接依賴 `SELECT *`，明確列出欄位通常更容易控管，也更適合長期維護。
+---
 
-## 📦 安裝方式
+## 🧠 Design Notes
+
+One of the package's key design ideas is to separate table schema definition from query projection.
+
+- `SchemeDelegate.structure()` is used for table creation and full-column selection.
+- `SelectMethod` is used for query-time projection such as aggregate functions and aliases.
+- Explicit column lists are easier to control than relying on `SELECT *`, especially when schema evolves.
+
+---
+
+## 📦 Installation
 
 ### Swift Package Manager
 
@@ -48,31 +50,31 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 
 ---
 
-## 🛠️ 公開 API
+## 🛠️ Public APIs
 
-| API | 說明 |
+| API | Description |
 |---|---|
-| `connect(fileURL:)` | 建立 SQLite 連線。 |
-| `connect(for:filename:)` | 使用指定位置與檔名建立 SQLite 連線。 |
-| `execute(sql:)` | 直接執行原生 SQL。 |
-| `prepare(sql:)` | 預備並執行 SQL 語句。 |
-| `select(sql:result:completion:)` | 執行原生 `SELECT` 查詢。 |
-| `close()` | 關閉目前的 SQLite 連線。 |
-| `scheme(tableName:)` | 讀取指定資料表的結構資訊。 |
-| `create(tableName:type:primaryKeys:ifNotExists:)` | 依 schema 定義建立資料表。 |
-| `drop(tableName:ifExists:)` | 刪除資料表。 |
-| `transaction(type:)` | 在 transaction 範圍內執行 SQL。 |
-| `insert(tableName:itemsArray:)` | 執行 `INSERT` 查詢。 |
-| `update(tableName:items:where:)` | 執行 `UPDATE` 查詢。 |
-| `delete(tableName:where:)` | 執行 `DELETE` 查詢。 |
-| `select(tableName:type:where:groupBy:having:orderBy:limit:)` | 執行以 schema 為基礎的 `SELECT` 查詢。 |
-| `select(tableName:methods:where:groupBy:having:orderBy:limit:)` | 執行自訂欄位投影的 `SELECT` 查詢。 |
+| `connect(fileURL:)` | Create a SQLite connection. |
+| `connect(for:filename:)` | Create a SQLite connection with a target location and filename. |
+| `execute(sql:)` | Execute raw SQL directly. |
+| `prepare(sql:)` | Prepare and execute SQL statements. |
+| `select(sql:result:completion:)` | Execute a raw `SELECT` query. |
+| `close()` | Close the current SQLite connection. |
+| `scheme(tableName:)` | Read the schema information of a table. |
+| `create(tableName:type:primaryKeys:ifNotExists:)` | Create a table from a schema definition. |
+| `drop(tableName:ifExists:)` | Drop a table. |
+| `transaction(type:)` | Execute SQL in a transaction scope. |
+| `insert(tableName:itemsArray:)` | Execute an `INSERT` query. |
+| `update(tableName:items:where:)` | Execute an `UPDATE` query. |
+| `delete(tableName:where:)` | Execute a `DELETE` query. |
+| `select(tableName:type:where:groupBy:having:orderBy:limit:)` | Execute a schema-based `SELECT` query. |
+| `select(tableName:methods:where:groupBy:having:orderBy:limit:)` | Execute a custom projection `SELECT` query. |
 
 ---
 
-## 🚀 基本範例
+## 🚀 Basic Example
 
-### 1. 定義資料模型與資料表結構
+### 1. Define a model and schema
 
 ```swift
 import Foundation
@@ -101,7 +103,7 @@ extension Student: WWSQLite3Manager.SchemeDelegate {
 }
 ```
 
-### 2. 連線、建表、寫入與查詢
+### 2. Connect, create, insert, and query
 
 ```swift
 import UIKit
@@ -143,11 +145,13 @@ final class ViewController: UIViewController {
 }
 ```
 
+The original README already demonstrates connection, table creation, insert, and schema-based selection in this style.
+
 ---
 
-## 🧠 查詢條件建構器
+## 🧠 Query Builders
 
-這個套件提供多種 builder，讓 Swift 端組 SQL 時更好閱讀。
+The library provides builder objects to make SQL composition easier to read in Swift code.
 
 ### Where
 
@@ -187,9 +191,9 @@ let limit = WWSQLite3Manager.Limit().build(count: 20, offset: 0)
 
 ---
 
-## 🍤 SelectMethod 自訂查詢欄位範例
+## 🍤 SelectMethod Example
 
-當查詢結果不是整張表的原始欄位，而是聚合函數、別名或自訂欄位投影時，建議使用 `select(tableName:methods:...)`。
+Use `select(tableName:methods:...)` when the query result is not the full table schema, such as aggregate queries, aliases, and custom projections.
 
 ```swift
 let methods: [WWSQLite3Manager.SelectMethod] = [
@@ -212,8 +216,8 @@ print(result.sql)
 print(result.array)
 ```
 
-建議使用方式：
+Recommended usage pattern:
 
-- `select(tableName:type:...)`：適合依照 schema 查詢完整欄位。
-- `select(tableName:methods:...)`：適合聚合查詢、別名欄位與自訂查詢結果。
+- Use `select(tableName:type:...)` for full-column queries based on schema.
+- Use `select(tableName:methods:...)` for aggregates, aliases, and custom result columns.
 

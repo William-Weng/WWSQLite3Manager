@@ -20,9 +20,9 @@ final class Student: Codable {
 // MARK: - SQLite3SchemeDelegate
 extension Student: WWSQLite3Manager.SchemeDelegate {
     
-    static func structure() -> [(key: String, type: WWSQLite3Manager.DataType)] {
+    static func structure() -> [WWSQLite3Manager.SchemeColumn] {
         
-        let keyTypes: [(key: String, type: WWSQLite3Manager.DataType)] = [
+        let keyTypes: [WWSQLite3Manager.SchemeColumn] = [
             (key: "id", type: .INTEGER()),
             (key: "name", type: .TEXT(attribute: (isNotNull: true, isNoCase: true, isUnique: true), defaultValue: nil)),
             (key: "height", type: .REAL()),

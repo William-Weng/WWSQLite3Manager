@@ -36,10 +36,10 @@ extension WWSQLite3Manager {
 extension WWSQLite3Manager.TableScheme {
     
     /// [SQL欄位順序結構 => CREATE時使用](https://jjeremy-xue.medium.com/swift-說說-codable-decodable-encodable-594b28ff3d49)
-    /// - Returns: [(key: String, type: SQLite3Condition.DataType)]
-    static func structure() -> [(key: String, type: WWSQLite3Manager.DataType)] {
+    /// - Returns: [SelectColumn]
+    static func structure() -> [WWSQLite3Manager.SchemeColumn] {
         
-        let keyTypes: [(key: String, type: WWSQLite3Manager.DataType)] = [
+        let keyTypes: [WWSQLite3Manager.SchemeColumn] = [
             (key: "cid", type: .INTEGER()),
             (key: "name", type: .TEXT()),
             (key: "type", type: .TEXT()),

@@ -14,10 +14,11 @@
 		3DBCD88026F198F300522E3B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3DBCD87E26F198F300522E3B /* LaunchScreen.storyboard */; };
 		810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 810D14E92DE4107200FC4564 /* WWSQLite3Manager */; };
 		811F0C872FC552F500E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C862FC552F500E42052 /* WWSQLite3Manager */; };
-		811F0C8A2FC5715500E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C892FC5715500E42052 /* WWSQLite3Manager */; };
+		811F0C8D2FC5720800E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C8C2FC5720800E42052 /* WWSQLite3Manager */; };
 		817EC85D2FBDA5D500598880 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 817EC85C2FBDA5D500598880 /* WWSQLite3Manager */; };
 		819D96A12791193B000CFB51 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819D96A02791193B000CFB51 /* Model.swift */; };
 		819D96A327911962000CFB51 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819D96A227911962000CFB51 /* Extension.swift */; };
+		81DF9C232FC58E0800734CDF /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81DF9C222FC58E0800734CDF /* WWSQLite3Manager */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,8 +39,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				817EC85D2FBDA5D500598880 /* WWSQLite3Manager in Frameworks */,
+				81DF9C232FC58E0800734CDF /* WWSQLite3Manager in Frameworks */,
 				811F0C872FC552F500E42052 /* WWSQLite3Manager in Frameworks */,
-				811F0C8A2FC5715500E42052 /* WWSQLite3Manager in Frameworks */,
+				811F0C8D2FC5720800E42052 /* WWSQLite3Manager in Frameworks */,
 				810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -146,7 +148,8 @@
 				810D14E92DE4107200FC4564 /* WWSQLite3Manager */,
 				817EC85C2FBDA5D500598880 /* WWSQLite3Manager */,
 				811F0C862FC552F500E42052 /* WWSQLite3Manager */,
-				811F0C892FC5715500E42052 /* WWSQLite3Manager */,
+				811F0C8C2FC5720800E42052 /* WWSQLite3Manager */,
+				81DF9C222FC58E0800734CDF /* WWSQLite3Manager */,
 			);
 			productName = Example;
 			productReference = 3DBCD87026F198EF00522E3B /* Example.app */;
@@ -177,7 +180,7 @@
 			);
 			mainGroup = 3DBCD86726F198EF00522E3B;
 			packageReferences = (
-				811F0C882FC5715500E42052 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
+				81DF9C212FC58E0800734CDF /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
 			);
 			productRefGroup = 3DBCD87126F198EF00522E3B /* Products */;
 			projectDirPath = "";
@@ -429,12 +432,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		811F0C882FC5715500E42052 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
+		81DF9C212FC58E0800734CDF /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/William-Weng/WWSQLite3Manager";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.0.0;
+				minimumVersion = 2.0.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -448,13 +451,17 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
 		};
-		811F0C892FC5715500E42052 /* WWSQLite3Manager */ = {
+		811F0C8C2FC5720800E42052 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 811F0C882FC5715500E42052 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
 			productName = WWSQLite3Manager;
 		};
 		817EC85C2FBDA5D500598880 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = WWSQLite3Manager;
+		};
+		81DF9C222FC58E0800734CDF /* WWSQLite3Manager */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81DF9C212FC58E0800734CDF /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
 			productName = WWSQLite3Manager;
 		};
 /* End XCSwiftPackageProductDependency section */

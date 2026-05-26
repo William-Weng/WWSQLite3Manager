@@ -102,7 +102,7 @@ public extension WWSQLite3Manager.Database {
     /// [建立資料表](https://www.sqlitetutorial.net/sqlite-create-table/)
     /// - CREATE TABLE IF NOT EXISTS "students" ("id" INTEGER DEFAULT 1, "name" TEXT, "height" REAL, "image" BLOB, "time" TEXT, PRIMARY KEY ("id"))
     /// - Parameters:
-    ///   - tableName: 資料表名稱
+    ///   - tableName: [資料表名稱](https://www.1keydata.com/tw/sql/sql-primary-key.html)
     ///   - type: 資料表結構定義型別
     ///   - primaryKeys: 主鍵欄位名稱陣列，可用於單一主鍵或複合主鍵
     ///   - ifNotExists: 是否只在資料表不存在時才建立；`true` 時使用 `CREATE TABLE IF NOT EXISTS`
@@ -116,18 +116,16 @@ public extension WWSQLite3Manager.Database {
     func create(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, primaryKeys: [String?] = [], ifNotExists: Bool = false) throws -> String {
         
         let fields = type.structure().map { key, type in "\(key.sqlIdentifier()) \(type.toSQL())" }.joined(separator: ", ")
-        let keys = primaryKeys.isEmpty ? [type.structure().first?.key] : primaryKeys
+        let primaryKeySQL = makePrimaryKeySQL(type: type, primaryKeys: primaryKeys)
+        let definitions = [fields, primaryKeySQL].compactMap { $0 }.joined(separator: ", ")
         let name = tableName.sqlIdentifier()
         
-        var sql = (!ifNotExists) ? "CREATE TABLE \(name) (\(fields)" : "CREATE TABLE IF NOT EXISTS \(name) (\(fields)"
-        
-        if let primaryKey = type.primaryKeys(keys) { sql += ", \(primaryKey)" }
-        sql += ")"
-        
+        let sql = ifNotExists ? "CREATE TABLE IF NOT EXISTS \(name) (\(definitions))" : "CREATE TABLE \(name) (\(definitions))"
         try execute(sql: sql)
+        
         return sql
     }
-    
+        
     /// [刪除資料表](https://www.sqlitetutorial.net/sqlite-drop-table/)
     /// - Parameters:
     ///   - tableName: 資料表名稱
@@ -141,6 +139,33 @@ public extension WWSQLite3Manager.Database {
         let sql = (!ifExists) ? "DROP TABLE \(name)" : "DROP TABLE IF EXISTS \(name)"
         
         try execute(sql: sql)
+        return sql
+    }
+    
+    /// 重新命名資料表
+    ///
+    /// 產生 `ALTER TABLE ... RENAME TO ...` SQL 語句，將既有資料表重新命名。
+    ///
+    /// - Note:
+    ///   - 舊資料表名稱與新資料表名稱都會自動轉成 SQL identifier 格式
+    ///   - 此操作只改變資料表名稱，不會變更表內資料
+    ///
+    /// - Parameters:
+    ///   - tableName: 原始資料表名稱
+    ///   - newTableName: 新的資料表名稱
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   若 SQL 執行失敗，拋出對應錯誤
+    @discardableResult
+    func rename(tableName: String, newTableName: String) throws -> String {
+        
+        let sourceName = tableName.sqlIdentifier()
+        let targetName = newTableName.sqlIdentifier()
+        
+        let sql = "ALTER TABLE \(sourceName) RENAME TO \(targetName)"
+        try execute(sql: sql)
+        
         return sql
     }
     
@@ -275,11 +300,109 @@ public extension WWSQLite3Manager.Database {
     ///   包含實際執行的 SQL 字串，以及查詢結果陣列
     func select(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, where whereConditions: WWSQLite3Manager.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
-        let fields = type.structure().map { $0.key }.joined(separator: ", ")
+        let structure = type.structure()
+        let fields = structure.map { $0.key.sqlIdentifier() }.joined(separator: ", ")
         
-        var sql = "SELECT \(fields) FROM \(tableName)"
+        return selectCore(tableName: tableName, fields: fields, decode: { statement in
+            
+            var array: [[String: Any]] = []
+            
+            while sqlite3_step(statement) == SQLITE_ROW {
+                
+                var dict: [String: Any] = [:]
+                
+                structure.enumerated().forEach { index, column in
+                    dict[column.key] = statement?.value(at: Int32(index), dataType: column.type)
+                }
+                
+                array.append(dict)
+            }
+            
+            return array
+            
+        }, where: whereConditions, groupBy: groupByConditions, having: havingConditions, orderBy: orderByConditions, limit: limitConditions)
+    }
+    
+    /// 查詢指定欄位或函數結果
+    ///
+    /// 依照 `SelectMethod` 陣列產生 `SELECT` 欄位清單，
+    /// 可支援一般欄位、聚合函數、`DISTINCT` 與欄位別名等查詢需求。
+    ///
+    /// - Note:
+    ///   - `methods` 會決定 `SELECT` 子句中的 result-column 內容
+    ///   - 查詢結果的欄位名稱會以 `SelectMethod.aliasName()` 為主
+    ///   - 查詢結果的資料型別會以 `SelectMethod.dataType()` 進行解析
+    ///   - 若需查詢資料表全部原始欄位，建議使用 `selectAll(...)`
+    ///
+    /// - Parameters:
+    ///   - tableName: 要查詢的資料表名稱
+    ///   - methods: `SELECT` 欄位描述陣列，可為一般欄位或 SQL 函數欄位
+    ///   - whereConditions: `WHERE` 條件
+    ///   - groupByConditions: `GROUP BY` 條件
+    ///   - havingConditions: `HAVING` 條件
+    ///   - orderByConditions: `ORDER BY` 條件
+    ///   - limitConditions: `LIMIT` 條件
+    /// - Returns:
+    ///   實際執行的 SQL 字串與查詢結果陣列
+    @discardableResult
+    func select(tableName: String, methods: [WWSQLite3Manager.SelectMethod], where whereConditions: WWSQLite3Manager.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Limit? = nil
+    ) -> WWSQLite3Manager.SelectResult {
+        
+        guard !methods.isEmpty else { return ("", []) }
+        
+        let fields = methods.map(\.sql).joined(separator: ", ")
+        
+        return selectCore(tableName: tableName, fields: fields, decode: { statement in
+            
+            var array: [[String: Any]] = []
+            
+            while sqlite3_step(statement) == SQLITE_ROW {
+                
+                var dict: [String: Any] = [:]
+                
+                methods.enumerated().forEach { index, method in
+                    dict[method.aliasName()] = statement?.value(at: Int32(index), dataType: method.dataType())
+                }
+                
+                array.append(dict)
+            }
+            
+            return array
+            
+        }, where: whereConditions, groupBy: groupByConditions, having: havingConditions, orderBy: orderByConditions, limit: limitConditions)
+    }
+}
+
+// MARK: - 小工具
+private extension WWSQLite3Manager.Database {
+    
+    /// 執行 SELECT 查詢核心邏輯
+    ///
+    /// 將欄位字串、條件子句與解碼流程組合成完整 `SELECT` 語句，
+    /// 並透過 prepared statement 執行查詢後回傳結果。
+    ///
+    /// - Note:
+    ///   - `fields` 需為合法的 result-column 字串，例如欄位清單、`*` 或函數表達式
+    ///   - `decode` 用來定義每一列查詢結果如何轉成 `[[String: Any]]`
+    ///   - `WHERE` 會先於 `GROUP BY` 套用；`HAVING` 則是在分組後過濾群組
+    ///   - `ORDER BY` 會影響結果排序；`LIMIT` 會限制回傳筆數
+    ///
+    /// - Parameters:
+    ///   - tableName: 要查詢的資料表名稱
+    ///   - fields: `SELECT` 子句中的欄位字串
+    ///   - decode: 查詢結果解碼閉包，用來將 statement 內容轉成結果陣列
+    ///   - whereConditions: `WHERE` 條件
+    ///   - groupByConditions: `GROUP BY` 條件
+    ///   - havingConditions: `HAVING` 條件
+    ///   - orderByConditions: `ORDER BY` 條件
+    ///   - limitConditions: `LIMIT` 條件
+    /// - Returns:
+    ///   實際執行的 SQL 字串與查詢結果陣列
+    func selectCore(tableName: String, fields: String, decode: (_ statement: OpaquePointer?) -> [[String: Any]], where whereConditions: WWSQLite3Manager.Where?, groupBy groupByConditions: WWSQLite3Manager.GroupBy?, having havingConditions: WWSQLite3Manager.Having?, orderBy orderByConditions: WWSQLite3Manager.OrderBy?, limit limitConditions: WWSQLite3Manager.Limit?) -> WWSQLite3Manager.SelectResult {
+        
+        let name = tableName.sqlIdentifier()
+        var sql = "SELECT \(fields) FROM \(name)"
         var statement: OpaquePointer? = nil
-        var array: [[String : Any]] = []
         
         if let whereConditions = whereConditions, !whereConditions.sqlString.isEmpty { sql += " " + whereConditions.sqlString }
         if let groupByConditions = groupByConditions, !groupByConditions.sqlString.isEmpty { sql += " " + groupByConditions.sqlString }
@@ -288,26 +411,11 @@ public extension WWSQLite3Manager.Database {
         if let limitConditions = limitConditions, !limitConditions.sqlString.isEmpty { sql += " " + limitConditions.sqlString }
         
         defer { sqlite3_finalize(statement) }
-        
         sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
-
-        while sqlite3_step(statement) == SQLITE_ROW {
-            
-            var dict: [String : Any] = [:]
-            
-            type.structure()._forEach { (index, paramater, _) in
-                dict[paramater.key] = statement?.value(at: Int32(index), dataType: paramater.type) ?? nil
-            }
-            
-            array.append(dict)
-        }
         
+        let array = decode(statement)
         return (sql, array)
     }
-}
-
-// MARK: - 小工具
-private extension WWSQLite3Manager.Database {
     
     /// [讀取資料表欄位資訊](https://stackoverflow.com/questions/39824274/sqlite-pragma-table-infotable-not-returning-column-names-using-data-sqlite-in)
     ///
@@ -346,6 +454,31 @@ private extension WWSQLite3Manager.Database {
         }
         
         return (sql, array)
+    }
+    
+    /// 產生 PRIMARY KEY 子句字串
+    ///
+    /// 依照傳入的主鍵欄位名稱陣列，建立單一主鍵或複合主鍵的 SQL 片段。
+    ///
+    /// - Note:
+    ///   - 若 `primaryKeys` 為空，預設會使用 `structure()` 的第一個欄位作為主鍵候選
+    ///   - 會自動過濾 `nil`、空字串與前後空白
+    ///   - 欄位名稱會自動轉成 SQL identifier 格式
+    ///   - 若有多個有效欄位，會建立複合主鍵，例如 `PRIMARY KEY("id", "name")`
+    ///
+    /// - Parameters:
+    ///   - type: 欄位結構描述型別
+    ///   - primaryKeys: 主鍵欄位名稱陣列，可為單一主鍵或複合主鍵
+    /// - Returns:
+    ///   `PRIMARY KEY(...)` SQL 字串；若沒有有效欄位名稱則回傳 `nil`
+    func makePrimaryKeySQL(type: WWSQLite3Manager.SchemeDelegate.Type, primaryKeys: [String?]) -> String? {
+        
+        let keyCandidates = primaryKeys.isEmpty ? [type.structure().first?.key] : primaryKeys
+        let validPrimaryKeys = keyCandidates.compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }.map { $0.sqlIdentifier() }
+        
+        guard !validPrimaryKeys.isEmpty else { return nil }
+        
+        return "PRIMARY KEY(\(validPrimaryKeys.joined(separator: ", ")))"
     }
     
     /// 將值轉成 SQLite 可用的字串
