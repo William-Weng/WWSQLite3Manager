@@ -56,7 +56,7 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 | `connect(for:filename:)` | 使用指定位置與檔名建立 SQLite 連線。 |
 | `execute(sql:)` | 直接執行原生 SQL。 |
 | `prepare(sql:)` | 預備並執行 SQL 語句。 |
-| `select(sql:result:completion:)` | 執行原生 `SELECT` 查詢。 |
+| `query(sql:result:completion:)` | 執行原生 `SELECT` 查詢。 |
 | `close()` | 關閉目前的 SQLite 連線。 |
 | `scheme(tableName:)` | 讀取指定資料表的結構資訊。 |
 | `create(tableName:type:primaryKeys:ifNotExists:)` | 依 schema 定義建立資料表。 |

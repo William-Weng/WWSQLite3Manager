@@ -82,6 +82,12 @@ extension String {
     func sqlIdentifier() -> String {
         return "\"\(replacingOccurrences(of: "\"", with: "\"\""))\""
     }
+
+    /// 將單引號轉成兩個單引號，供 SQL string literal 使用 => SQLite 中字串內的 `'` 需要寫成 `''` 才能正確轉義
+    /// - Returns: 轉義後的字串
+    func escapingSingleQuote() -> String {
+        replacingOccurrences(of: "'", with: "''")
+    }
 }
 
 // MARK: - Array (function)

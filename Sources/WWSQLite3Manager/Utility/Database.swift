@@ -53,7 +53,7 @@ public extension WWSQLite3Manager.Database {
         let stepCode = sqlite3_step(statement)
         guard stepCode == SQLITE_DONE else { throw makeError(.step, code: stepCode) }
     }
-    
+        
     /// [執行SELECT SQL](http://jengting.blogspot.com/2014/04/sql-where-having.html)
     ///
     /// SELECT * FROM students GROUP BY height, id HAVING height > 175
@@ -62,7 +62,7 @@ public extension WWSQLite3Manager.Database {
     ///   - sql: [String](http://sqlqna.blogspot.com/2018/03/havingif-else.html)
     ///   - result: ((OpaquePointer?) -> Void)
     /// - Throws: CustomError
-    func select(sql: String, result: ((OpaquePointer?) -> Void)) throws {
+    func query(sql: String, result: ((OpaquePointer?) -> Void)) throws {
         
         var statement: OpaquePointer? = nil
         defer { sqlite3_finalize(statement) }
@@ -467,6 +467,35 @@ public extension WWSQLite3Manager.Database {
 }
 
 // MARK: - 小工具
+extension WWSQLite3Manager.Database {
+    
+    ///  query(sql:result:) 的 async 版本
+    /// - Parameter sql: String
+    /// - Returns: [WWSQLite3Manager.SQLiteRow]
+    func query(sql: String) throws -> [WWSQLite3Manager.SQLiteRow] {
+        
+        var statement: OpaquePointer? = nil
+        defer { sqlite3_finalize(statement) }
+        
+        let prepareCode = sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
+
+        var rows: [WWSQLite3Manager.SQLiteRow] = []
+
+        while true {
+            
+            let stepCode = sqlite3_step(statement)
+
+            switch stepCode {
+            case SQLITE_ROW: rows.append(readRow(statement))
+            case SQLITE_DONE: return rows
+            default: throw makeError(.step, code: stepCode)
+            }
+        }
+    }
+}
+
+// MARK: - 小工具
 private extension WWSQLite3Manager.Database {
     
     /// 執行 SELECT 查詢核心邏輯
@@ -624,5 +653,33 @@ private extension WWSQLite3Manager.Database {
         
         let message = sqlite3_errmsg(database).flatMap { String(cString: $0) } ?? "No SQLite error message."
         return .sqlite(operation: operation, code: code, message: message)
+    }
+    
+    /// 讀取目前 statement 所在的一列資料，並轉成 SQLiteRow。
+    /// - Parameter statement: SQLite 查詢目前的資料列指標。
+    /// - Returns: 以欄位名稱為 key、欄位值為 value 的字典。
+    func readRow(_ statement: OpaquePointer?) -> WWSQLite3Manager.SQLiteRow {
+        
+        guard let statement else { return [:] }
+
+        let columnCount = sqlite3_column_count(statement)
+        var row: WWSQLite3Manager.SQLiteRow = [:]
+
+        for index in 0..<columnCount {
+            
+            let name = String(cString: sqlite3_column_name(statement, index))
+            let type = sqlite3_column_type(statement, index)
+
+            switch type {
+            case SQLITE_INTEGER: row[name] = sqlite3_column_int64(statement, index)
+            case SQLITE_FLOAT: row[name] = sqlite3_column_double(statement, index)
+            case SQLITE_TEXT: row[name] = sqlite3_column_text(statement, index).map { String(cString: $0) }
+            case SQLITE_NULL: row[name] = nil
+            case SQLITE_BLOB: if let bytes = sqlite3_column_blob(statement, index) { let size = Int(sqlite3_column_bytes(statement, index)); row[name] = Data(bytes: bytes, count: size) }
+            default: break
+            }
+        }
+
+        return row
     }
 }
