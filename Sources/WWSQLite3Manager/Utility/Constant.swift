@@ -28,6 +28,12 @@ public extension WWSQLite3Manager {
         case close                                                          // 關閉資料庫連線
     }
     
+    /// 資料排序方向
+    enum SortDirection: String {
+        case asc = "ASC"                                                    // 升冪排序（預設）
+        case desc = "DESC"                                                  // 降冪排序
+    }
+    
     /// SQLite 交易控制指令類型
     ///
     /// 對應 SQLite 常見的交易語法字串，可用於開始、提交或回滾交易

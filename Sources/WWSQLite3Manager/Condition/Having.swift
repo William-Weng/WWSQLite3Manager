@@ -1,15 +1,19 @@
 //
-//  File.swift
+//  Having.swift
 //  WWSQLite3Manager
 //
-//  Created by iOS on 2026/5/25.
+//  Created by William.Weng on 2026/5/26.
 //
 
 import Foundation
 
 public extension WWSQLite3Manager {
+    
+    /// SQL HAVING 條件建構器
+    ///
+    /// 用來過濾 `GROUP BY` 之後產生的群組結果
+    class Having: Where {
         
-    /// [篩選後的過濾條件](https://www.mysql.tw/2014/06/sqlwherehaving.html)
-    class Having: WWSQLite3Manager.Where {}
+        override var clause: String { "HAVING" }
+    }
 }
-

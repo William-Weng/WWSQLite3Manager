@@ -88,7 +88,7 @@ public extension WWSQLite3Manager.Database {
     }
 }
 
-// MARK: - 公開的function
+// MARK: - 公開函式
 public extension WWSQLite3Manager.Database {
 
     /// 取得該Table的結構組成
@@ -267,9 +267,13 @@ public extension WWSQLite3Manager.Database {
     ///   - tableName: [資料表名稱](https://www.fooish.com/sql/count-function.html)
     ///   - type: [資料表結構描述型別，用來取得欄位名稱與欄位型別](https://www.1keydata.com/tw/sql/sqldistinct.html)
     ///   - whereConditions: 選用的 WHERE 條件建構器
+    ///   - groupByConditions: 選用的 GROUP BY 條件建構器
+    ///   - havingConditions: 選用的 HAVING 條件建構器
+    ///   - orderByConditions: 選用的 ORDER BY 條件建構器
+    ///   - limitConditions: 選用的 LIMIT 條件建構器
     /// - Returns:
     ///   包含實際執行的 SQL 字串，以及查詢結果陣列
-    func select(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, where whereConditions: WWSQLite3Manager.Where? = nil) -> WWSQLite3Manager.SelectResult {
+    func select(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, where whereConditions: WWSQLite3Manager.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         let fields = type.structure().map { $0.key }.joined(separator: ", ")
         
@@ -278,6 +282,10 @@ public extension WWSQLite3Manager.Database {
         var array: [[String : Any]] = []
         
         if let whereConditions = whereConditions, !whereConditions.sqlString.isEmpty { sql += " " + whereConditions.sqlString }
+        if let groupByConditions = groupByConditions, !groupByConditions.sqlString.isEmpty { sql += " " + groupByConditions.sqlString }
+        if let havingConditions = havingConditions, !havingConditions.sqlString.isEmpty { sql += " " + havingConditions.sqlString }
+        if let orderByConditions = orderByConditions, !orderByConditions.sqlString.isEmpty { sql += " " + orderByConditions.sqlString }
+        if let limitConditions = limitConditions, !limitConditions.sqlString.isEmpty { sql += " " + limitConditions.sqlString }
         
         defer { sqlite3_finalize(statement) }
         

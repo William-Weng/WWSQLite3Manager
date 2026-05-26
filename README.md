@@ -6,18 +6,17 @@
 - A small tool for SQLite3 that makes basic [CRUD](https://zh.wikipedia.org/zh-tw/增刪查改) easier to use.
 - 一個SQLite3的小工具，讓基本的[CRUD](https://zh.wikipedia.org/zh-tw/增刪查改)能更方便的使用.
 
-![](./Example.webp)
-
 ### [Installation with Swift Package Manager](https://medium.com/彼得潘的-swift-ios-app-開發問題解答集/使用-spm-安裝第三方套件-xcode-11-新功能-2c4ffcf85b4b)
 ```
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.0.0"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.0.1"))
 ]
 ```
 
-### [Function - 可用函式](https://ezgif.com/video-to-webp)
+### 公開函式
+
 |函式|功能|
-|-|-|
+|---|---|
 |connect(fileURL:)|建立SQLite連線|
 |connect(for:filename:)|建立SQLite連線|
 |execute(sql:)|直讀SQL|
@@ -30,7 +29,7 @@ dependencies: [
 |transaction(type:)|事務處理|
 |insert(tableName:itemsArray:)|執行 INSERT 查詢|
 |update(tableName:items:where:)|執行 UPDATE 查詢|
-|delete(tableName:where:)|執行 DELETE 查詢|
+|delete(tableName:where:groupBy:having:orderBy:limit:)|執行 DELETE 查詢|
 |select(tableName:type:where:)|執行 SELECT 查詢|
 
 ### Example

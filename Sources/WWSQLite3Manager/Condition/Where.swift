@@ -22,8 +22,10 @@ public extension WWSQLite3Manager {
     /// [SQL WHERE 條件建構器](https://www.fooish.com/sql/where.html)
     class Where {
         
-        private var expression: WhereExpression?       // 目前累積的 WHERE 條件表達式
-                
+        var clause: String { "WHERE" }                  // SQL 子句前綴
+        
+        internal var expression: WhereExpression?    // 目前累積的 WHERE 條件表達式
+        
         public required init() {}
     }
 }
@@ -31,6 +33,7 @@ public extension WWSQLite3Manager {
 // MARK: - 公開屬性
 public extension WWSQLite3Manager.Where {
     
+    /// 轉成 SQL WHERE 子句字串
     var sqlString: String { makeSqlString() }
 }
 
@@ -227,7 +230,7 @@ private extension WWSQLite3Manager.Where {
     /// - Returns: String
     func makeSqlString() -> String {
         guard let expression else { return "" }
-        return "WHERE \(expression.sqlString)"
+        return "\(clause) \(expression.sqlString)"
     }
     
     /// 將新的條件節點依指定邏輯運算子附加到目前表達式 => 若目前尚無條件，則直接將 rhs 設為根節點

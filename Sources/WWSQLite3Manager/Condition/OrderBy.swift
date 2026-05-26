@@ -1,65 +1,68 @@
 //
-//  SQLite3Condition+OrderBy.swift
+//  OrderBy.swift
 //  WWSQLite3Manager
 //
-//  Created by William.Weng on 2022/1/17.
+//  Created by William.Weng on 2026/5/26.
 //
 
 import Foundation
 
 public extension WWSQLite3Manager {
-    
-    /// [數量取得條件](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
-    public class OrderBy: NSObject {
-        var items: String = ""
+        
+    /// [SQL ORDER BY 條件建構器](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
+    ///
+    /// 用來指定查詢結果的排序欄位與排序方向
+    class OrderBy {
+        
+        private var items: String = ""
+        
+        public required init() {}
     }
 }
 
 // MARK: - OrderBy
 public extension WWSQLite3Manager.OrderBy {
+    
+    var sqlString: String { items }     // 轉成 SQL ORDER BY 子句字串
+}
 
-    /// 組成排序用字串 => name ASC
+// MARK: - OrderBy
+public extension WWSQLite3Manager.OrderBy {
+        
+    /// 產生 ORDER BY 條件
+    ///
+    /// - Note:
+    ///   - `symbol` 通常為 `ASC` 或 `DESC`
+    ///   - 可同時指定多個排序欄位
+    ///
     /// - Parameters:
-    ///   - type: SQLite3Condition.OrderByType
-    /// - Returns: Self
-    func item(type: WWSQLite3Manager.OrderByType) -> Self {
+    ///   - orderTypes: 排序規則陣列
+    /// - Returns: 自身實例，方便鏈式呼叫
+    @discardableResult
+    func build(orderTypes: [WWSQLite3Manager.OrderType]) -> Self {
         
-        let info = parseOrderByTypeInfo(type)
-        self.items += "\(info.key) \(info.symbol)"
+        let validItems = orderTypes.compactMap { item -> String? in
+            
+            let key = item.key.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty else { return nil }
+            
+            return "\(key) \(item.direction.rawValue)"
+        }
         
+        guard !validItems.isEmpty else { items = ""; return self }
+        
+        items = "ORDER BY " + validItems.joined(separator: ", ")
         return self
     }
     
-    /// 組成排序用字串 => , height DESC
+    /// 產生單一欄位的 ORDER BY 條件
+    ///
     /// - Parameters:
-    ///   - type: SQLite3Condition.OrderByType
-    /// - Returns: Self
-    func addItem(type: WWSQLite3Manager.OrderByType) -> Self {
-        
-        let info = parseOrderByTypeInfo(type)
-        self.items += ", \(info.key) \(info.symbol)"
-        
-        return self
-    }
-}
-
-// MARK: - 小工具
-public extension WWSQLite3Manager.OrderBy {
-
-    /// 解析SQLite3Condition.OrderByType
-    /// - Parameter type: SQLite3Condition.OrderByType
-    /// - Returns: OrderType
-    func parseOrderByTypeInfo(_ type: WWSQLite3Manager.OrderByType) -> WWSQLite3Manager.OrderType {
-        
-        let key: String
-        let symbol = type.symbol()
-        
-        switch type {
-        case .ascending(let _key): key = _key
-        case .descending(let _key): key = _key
-        case .random: key = ""
-        }
-        
-        return (key: key, symbol: type.symbol())
+    ///   - key: 排序欄位名稱
+    ///   - direction: 排序方向，預設為升冪
+    /// - Returns: 自身實例，方便鏈式呼叫
+    @discardableResult
+    func build(key: String, direction: WWSQLite3Manager.SortDirection = .asc) -> Self {
+        build(orderTypes: [(key: key, direction: direction)])
     }
 }

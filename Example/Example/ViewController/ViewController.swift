@@ -35,12 +35,13 @@ final class ViewController: UIViewController {
                 (key: "height", value: 180.87),
             ]
             
-            let `where` = WWSQLite3Manager.Where()
+            let `where`: WWSQLite3Manager.Where = .init()
                 .compare("height", .greaterThanOrEqual, .int(180))
                 .and("name", .like, .text("%William%"))
             
             try database.insert(tableName: tableName, itemsArray: [items])
             let info = database.select(tableName: tableName, type: Student.self, where: `where`)
+            
             print(info.array)
             
         } catch {
