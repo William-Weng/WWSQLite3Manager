@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension WWSQLite3Manager.Condition {
+public extension WWSQLite3Manager {
         
     /// [分組條件](https://blog.csdn.net/HD243608836/article/details/88813269)
     public class GroupBy: NSObject {
@@ -16,7 +16,7 @@ public extension WWSQLite3Manager.Condition {
 }
 
 // MARK: - OrderBy
-public extension WWSQLite3Manager.Condition.GroupBy {
+public extension WWSQLite3Manager.GroupBy {
     
     /// 組成排序用字串
     /// - Parameters:

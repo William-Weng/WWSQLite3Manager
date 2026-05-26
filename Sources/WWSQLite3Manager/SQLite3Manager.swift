@@ -43,7 +43,7 @@ public extension WWSQLite3Manager {
     ///   - filename: String
     /// - Throws: CustomError
     /// - Returns: [Database](https://www.jianshu.com/p/ce49d8f32f77)
-    func connect(for directory: URL = .applicationSupportDirectory, filename: String) throws -> Database {
+    func connect(for directory: URL = .documentsDirectory, filename: String) throws -> Database {
         let fileURL = directory.appending(path: filename)
         return try connect(fileURL: fileURL)
     }

@@ -158,28 +158,44 @@ public extension WWSQLite3Manager.Database {
 
 // MARK: - CRUD
 public extension WWSQLite3Manager.Database {
-
-    /// [插入資料](https://www.1keydata.com/tw/sql/sqlinsert.html)
+    
+    /// [執行 INSERT 查詢](https://www.1keydata.com/tw/sql/sqlinsert.html)
     ///
-    /// NSERT INTO students ('name', 'height') VALUES ('William', '178.87'), ('Curry', '196.38')
+    /// 將多筆資料組合成單一 `INSERT INTO ... VALUES ...` SQL 語句，並送交 SQLite 執行
+    ///
+    /// - Note:
+    ///   - 會依第一筆資料的欄位順序建立欄位清單
+    ///   - 所有資料列的欄位數量與欄位名稱順序必須一致
+    ///   - 字串內容會自動處理單引號跳脫
+    ///   - `NULL` 會輸出為 SQL 的 `NULL` 關鍵字
     ///
     /// - Parameters:
-    ///   - tableName: [String](https://www.fooish.com/sql/insert-into.html)
-    ///   - itemsArray: [[InsertItem]]
-    /// - Throws: CustomError
-    /// - Returns: String
+    ///   - tableName: [要插入資料的資料表名稱](https://www.fooish.com/sql/insert-into.html)
+    ///   - itemsArray: 多筆待新增資料，每一筆資料由多個 `InsertItem` 組成
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   當 `itemsArray` 為空，或欄位結構不一致，或 SQL 執行失敗時拋出錯誤
     @discardableResult
     func insert(tableName: String, itemsArray: [[WWSQLite3Manager.InsertItem]]) throws -> String {
-                
-        guard let keys = itemsArray.first?.map({ $0.key }).joined(separator: ", ") else { throw WWSQLite3Manager.CustomError.missingItems }
+        
+        guard let firstItems = itemsArray.first, !firstItems.isEmpty else { throw WWSQLite3Manager.CustomError.missingItems }
+        
+        let baseKeys = firstItems.map(\.key)
+        let keys = baseKeys.joined(separator: ", ")
+        
+        for items in itemsArray {
+            let currentKeys = items.map(\.key)
+            guard currentKeys == baseKeys else { throw WWSQLite3Manager.CustomError.missingItems }
+        }
         
         let values = itemsArray.map { items -> String in
-            let values = items.map({ "'\($1)'" }).joined(separator: ", ")
-            return "(\(values))"
+            let valueString = items.map { sqlValue($0.value) }.joined(separator: ", ")
+            return "(\(valueString))"
         }.joined(separator: ", ")
         
         let sql = "INSERT INTO \(tableName) (\(keys)) VALUES \(values)"
-        let isSuccess = try prepare(sql: sql)
+        try prepare(sql: sql)
         
         return sql
     }
@@ -193,7 +209,7 @@ public extension WWSQLite3Manager.Database {
     /// - Throws: CustomError
     /// - Returns: String
     @discardableResult
-    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: WWSQLite3Manager.Condition.Where?) throws -> String {
+    func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: WWSQLite3Manager.Where?) throws -> String {
         
         let _items = items.map { "\($0) = '\($1)'" }.joined(separator: ", ")
         var sql = "UPDATE \(tableName) SET \(_items)"
@@ -212,7 +228,7 @@ public extension WWSQLite3Manager.Database {
     /// - Throws: CustomError
     /// - Returns: ExecuteResult
     @discardableResult
-    func delete(tableName: String, where whereConditions: WWSQLite3Manager.Condition.Where?) throws -> String {
+    func delete(tableName: String, where whereConditions: WWSQLite3Manager.Where?) throws -> String {
         
         var sql = "DELETE FROM \(tableName)"
         
@@ -222,18 +238,17 @@ public extension WWSQLite3Manager.Database {
         return sql
     }
     
-    /// [查詢資訊](https://www.1keydata.com/tw/sql/sqlselect.html)
-    /// - SELECT * FROM students WHERE id = 1
+    /// [執行 SELECT 查詢](https://www.1keydata.com/tw/sql/sqlselect.html)
+    ///
+    /// 依照 `SchemeDelegate` 定義的欄位結構，自動組合查詢欄位，並將查詢結果轉成 `[[String: Any]]` 型式回傳
+    ///
     /// - Parameters:
-    ///   - tableName: String
-    ///   - type: SchemeDelegate.Type
-    ///   - whereConditions: Where語句
-    ///   - groupByConditions: GroupBy語句
-    ///   - havingConditions: HAVING語句
-    ///   - orderByConditions: OrderBy語句
-    ///   - limitConditions: Limit語句
-    /// - Returns: SelectResult
-    func select(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, where whereConditions: WWSQLite3Manager.Condition.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.Condition.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Condition.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.Condition.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
+    ///   - tableName: 資料表名稱
+    ///   - type: 資料表結構描述型別，用來取得欄位名稱與欄位型別
+    ///   - whereConditions: 選用的 WHERE 條件建構器
+    /// - Returns:
+    ///   包含實際執行的 SQL 字串，以及查詢結果陣列
+    func select(tableName: String, type: WWSQLite3Manager.SchemeDelegate.Type, where whereConditions: WWSQLite3Manager.Where? = nil) -> WWSQLite3Manager.SelectResult {
         
         let fields = type.structure().map { $0.key }.joined(separator: ", ")
         
@@ -241,11 +256,7 @@ public extension WWSQLite3Manager.Database {
         var statement: OpaquePointer? = nil
         var array: [[String : Any]] = []
         
-//        if let _whereConditions = whereConditions { sql += " WHERE\(_whereConditions.items)" }
-//        if let _groupByConditions = groupByConditions { sql += " GROUP BY \(_groupByConditions.items)" }
-//        if let _havingConditions = havingConditions { sql += " HAVING\(_havingConditions.items)" }
-//        if let _orderByConditions = orderByConditions { sql += " ORDER BY \(_orderByConditions.items)" }
-//        if let _limitConditions = limitConditions { sql += " \(_limitConditions.items)" }
+        if let whereConditions = whereConditions, !whereConditions.sqlString.isEmpty { sql += " " + whereConditions.sqlString }
         
         defer { sqlite3_finalize(statement) }
         
@@ -256,7 +267,7 @@ public extension WWSQLite3Manager.Database {
             var dict: [String : Any] = [:]
             
             type.structure()._forEach { (index, paramater, _) in
-                dict[paramater.key] = statement?._value(at: Int32(index), dataType: paramater.type) ?? nil
+                dict[paramater.key] = statement?.value(at: Int32(index), dataType: paramater.type) ?? nil
             }
             
             array.append(dict)
@@ -275,7 +286,7 @@ public extension WWSQLite3Manager.Database {
     ///   - orderByConditions: OrderBy語句
     ///   - limitConditions: Limit語句
     /// - Returns: SelectResult
-    func select(tableName: String, functions: [WWSQLite3Manager.SelectMethod] = [], where whereConditions: WWSQLite3Manager.Condition.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.Condition.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Condition.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.Condition.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Condition.Limit? = nil) -> WWSQLite3Manager.SelectResult {
+    func select(tableName: String, functions: [WWSQLite3Manager.SelectMethod] = [], where whereConditions: WWSQLite3Manager.Where? = nil, groupBy groupByConditions: WWSQLite3Manager.GroupBy? = nil, having havingConditions: WWSQLite3Manager.Having? = nil, orderBy orderByConditions: WWSQLite3Manager.OrderBy? = nil, limit limitConditions: WWSQLite3Manager.Limit? = nil) -> WWSQLite3Manager.SelectResult {
         
         var sql = "SELECT * FROM \(tableName)"
         
@@ -302,7 +313,7 @@ public extension WWSQLite3Manager.Database {
             var dict: [String : Any] = [:]
             
             for (index, function) in functions.enumerated() {
-                dict[function.aliasName()] = statement?._value(at: Int32(index), dataType: function.dataType()) ?? nil
+                dict[function.aliasName()] = statement?.value(at: Int32(index), dataType: function.dataType()) ?? nil
             }
             
             array.append(dict)
@@ -336,7 +347,7 @@ private extension WWSQLite3Manager.Database {
             var dict: [String : Any] = [:]
             
             type.structure()._forEach { (index, paramater, _) in
-                dict[paramater.key] = statement?._value(at: Int32(index), dataType: paramater.type) ?? nil
+                dict[paramater.key] = statement?.value(at: Int32(index), dataType: paramater.type) ?? nil
             }
             
             array.append(dict)

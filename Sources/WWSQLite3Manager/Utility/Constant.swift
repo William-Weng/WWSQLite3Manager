@@ -10,9 +10,7 @@ import Foundation
 // MARK: - enum
 public extension WWSQLite3Manager {
     
-    /// WWSQLite3Manager 使用的自訂錯誤型別
-    ///
-    /// 用來描述資料庫開啟失敗、缺少必要資料，或是 SQLite API 執行時發生的錯誤資訊
+    /// WWSQLite3Manager 使用的自訂錯誤型別 => 用來描述資料庫開啟失敗、缺少必要資料，或是 SQLite API 執行時發生的錯誤資訊
     enum CustomError: Error, LocalizedError {
         
         case unknown                                                        // 未知錯誤
@@ -21,9 +19,7 @@ public extension WWSQLite3Manager {
         case sqlite(operation: Operation, code: Int32, message: String)     // SQLite 操作失敗 (操作類型, 錯誤碼, 錯誤訊息)
     }
     
-    /// SQLite 執行流程中的操作類型
-    ///
-    /// 可用來標示錯誤發生於哪一個 SQLite 呼叫階段，方便除錯與記錄
+    /// SQLite 執行流程中的操作類型 => 可用來標示錯誤發生於哪一個 SQLite 呼叫階段，方便除錯與記錄
     enum Operation: String {
         
         case execute                                                        // 執行 SQL 指令
@@ -41,7 +37,35 @@ public extension WWSQLite3Manager {
         case commit = "COMMIT"                                              // 提交交易
         case rollback = "ROLLBACK"                                          // 回滾交易
     }
-
+    
+    /// 表示 SQL 條件比較運算子 => 用於 WHERE 子句中的欄位比較
+    enum CompareOperator: String {
+        
+        case equal = "="                                                    // 等於 (=)
+        case notEqual = "!="                                                // 不等於 (!=)
+        case greaterThan = ">"                                              // 大於 (>)
+        case greaterThanOrEqual = ">="                                      // 大於等於 (>=)
+        case lessThan = "<"                                                 // 小於 (<)
+        case lessThanOrEqual = "<="                                         // 小於等於 (<=)
+        case like = "LIKE"                                                  // 模糊比對 (LIKE)
+    }
+    
+    /// 表示多個條件之間的邏輯運算子 => 用於 WHERE 子句中條件的串接
+    enum JoinType {
+        
+        case and                                                            // 邏輯且 (AND)
+        case or                                                             // 邏輯或 (OR)
+    }
+    
+    /// 表示 SQL 語句中可使用的資料型別 => 用於 INSERT、UPDATE、WHERE 等參數綁定
+    enum SQLValue {
+        
+        case int(Int)                                                       // 整數型別 (INTEGER)
+        case double(Double)                                                 // 浮點數型別 (REAL / DOUBLE)
+        case text(String)                                                   // 字串型別 (TEXT)
+        case null                                                           // 空值 (NULL)
+    }
+    
     /// 排序 => 小到大 / 大到小
     enum OrderByType {
         
@@ -73,12 +97,44 @@ public extension WWSQLite3Manager {
     }
 }
 
+// MARK: - enum (indirect)
+public extension WWSQLite3Manager {
+    
+    /// 表示 SQL WHERE 子句的條件表達式（抽象語法樹）=> 可透過遞迴結構組合複雜查詢條件
+    indirect enum WhereExpression {
+        
+        case compare(key: String, operator: CompareOperator, value: SQLValue)   // 單一欄位比較 => Example: age > 18
+        case between(key: String, from: SQLValue, to: SQLValue)                 // 區間查詢（包含邊界）=> Example: age BETWEEN 18 AND 30
+        case notBetween(key: String, from: SQLValue, to: SQLValue)              // 區間排除（包含邊界）=> Example: age NOT BETWEEN 18 AND 30
+        case like(key: String, pattern: String, escape: Character?)             // 模糊比對（LIKE）=> Example: name LIKE '%abc%' ESCAPE '\'
+        case notLike(key: String, pattern: String, escape: Character?)          // 排除模糊比對（NOT LIKE）=> Example: name NOT LIKE '%abc%'
+        case `in`(key: String, values: [SQLValue])                              // 集合包含（IN）=> Example: id IN (1, 2, 3)
+        case notIn(key: String, values: [SQLValue])                             // 集合排除（NOT IN）=> Example: id NOT IN (1, 2, 3)
+        case and(WhereExpression, WhereExpression)                              // 邏輯 AND 組合 => Example: (age > 18) AND (score >= 60)
+        case or(WhereExpression, WhereExpression)                               // 邏輯 OR 組合 => Example: (age < 18) OR (age > 65)
+        case not(WhereExpression)                                               // 邏輯 NOT 反轉條件 => Example: NOT (age > 18)
+        case group(WhereExpression)                                             // 群組條件（對應括號）=> Example: (age > 18 AND score > 60)
+    }
+}
+
 // MARK: - CustomError (LocalizedError)
 public extension WWSQLite3Manager.CustomError {
         
     var errorDescription: String { makeErrorDescription() }
     var failureReason: String { makeFailureReason() }
     var recoverySuggestion: String? { makeRecoverySuggestion() }
+}
+
+// MARK: - SQLValue
+extension WWSQLite3Manager.SQLValue {
+    
+    var sqlString: String { makeSqlString() }
+}
+
+// MARK: - WhereExpression
+extension WWSQLite3Manager.WhereExpression {
+    
+    var sqlString: String { makeSqlString() }
 }
 
 // MARK: - OrderByType
@@ -110,6 +166,95 @@ public extension WWSQLite3Manager.CompareType {
         case .lessThan(_, _): return "<"
         case .lessOrEqual(_, _): return "<="
         case .notEqual(_, _): return "!="
+        }
+    }
+}
+
+// MARK: - DataType
+public extension WWSQLite3Manager.DataType {
+    
+    /// [轉成SQL語法](http://tw.gitbook.net/sqlite/sqlite_using_autoincrement.html)
+    /// - number INTEGER DEFAULT 0 NOT NULL COLLATE NOCASE
+    /// - Returns: [String](https://www.sqlite.org/datatype3.html)
+    func toSQL() -> String {
+        
+        switch self {
+        case .INTEGER(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .TEXT(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .BLOB(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .REAL(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .NUMERIC(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
+        case .TIMESTAMP(let defaultValue): return timestampString(defaultValue: defaultValue)
+        }
+    }
+}
+
+// MARK: - DataType
+private extension WWSQLite3Manager.DataType {
+    
+    /// .INTEGER => INTEGER / .TEXT => TEXT
+    /// - Returns: String
+    func toString() -> String {
+        
+        switch self {
+        case .INTEGER: return "INTEGER"
+        case .TEXT: return "TEXT"
+        case .BLOB: return "BLOB"
+        case .REAL: return "REAL"
+        case .NUMERIC: return "NUMERIC"
+        case .TIMESTAMP: return "TIMESTAMP"
+        }
+    }
+}
+
+// MARK: - 小工具
+private extension WWSQLite3Manager.DataType {
+
+    /// 組成SQL字串
+    /// - Parameters:
+    ///   - attribute: SQLite3Condition.Attribute
+    ///   - defaultValue: T?
+    /// - Returns: String
+    func sqlStringMaker<T>(attribute: WWSQLite3Manager.Attribute, defaultValue: T?) -> String {
+        
+        var sql = self.toString()
+        
+        if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }
+        if (attribute.isNotNull) { sql += " NOT NULL" }
+        if (attribute.isNoCase) { sql += " COLLATE NOCASE" }
+        if (attribute.isUnique) { sql += " UNIQUE" }
+        
+        return sql
+    }
+    
+    /// [組成TimeStamp字串](https://www.cnblogs.com/endv/p/12129481.html)
+    /// - Parameters:
+    ///   - defaultValue: String
+    /// - Returns: String
+    func timestampString(defaultValue: String?) -> String {
+        
+        var sql = self.toString()
+        if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }
+        
+        return sql
+    }
+}
+
+// MARK: - SQLValue
+private extension WWSQLite3Manager.SQLValue {
+    
+    /// 將 SQLValue 轉成可直接嵌入 SQL 的字串
+    /// - Returns: SQL 字串
+    /// - Note:
+    ///   - String 會自動處理單引號跳脫
+    ///   - NULL 會轉成 SQL 的 NULL 關鍵字
+    func makeSqlString() -> String {
+        
+        switch self {
+        case .int(let value): return "\(value)"
+        case .double(let value): return "\(value)"
+        case .text(let value): return "'\(value.replacingOccurrences(of: "'", with: "''"))'"
+        case .null: return "NULL"
         }
     }
 }
@@ -172,68 +317,77 @@ private extension WWSQLite3Manager.CustomError {
     }
 }
 
-// MARK: - DataType
-public extension WWSQLite3Manager.DataType {
+private extension WWSQLite3Manager.WhereExpression {
     
-    /// .INTEGER => INTEGER / .TEXT => TEXT
+    /// 依照不同的條件節點產生對應 SQL 字串
     /// - Returns: String
-    func toString() -> String {
+    func makeSqlString() -> String {
         
         switch self {
-        case .INTEGER: return "INTEGER"
-        case .TEXT: return "TEXT"
-        case .BLOB: return "BLOB"
-        case .REAL: return "REAL"
-        case .NUMERIC: return "NUMERIC"
-        case .TIMESTAMP: return "TIMESTAMP"
+        case .between(let key, let from, let to): return "\(key) BETWEEN \(from.sqlString) AND \(to.sqlString)"
+        case .notBetween(let key, let from, let to): return "\(key) NOT BETWEEN \(from.sqlString) AND \(to.sqlString)"
+        case .like(let key, let pattern, let escape): return "\(key) LIKE \(quoted(pattern))\(escapeClause(escape))"
+        case .notLike(let key, let pattern, let escape): return "\(key) NOT LIKE \(quoted(pattern))\(escapeClause(escape))"
+        case .in(let key, let values): return "\(key) IN (\(joined(values)))"
+        case .notIn(let key, let values): return "\(key) NOT IN (\(joined(values)))"
+        case .and(let lhs, let rhs): return "\(lhs.sqlString) AND \(rhs.sqlString)"
+        case .or(let lhs, let rhs): return "\(lhs.sqlString) OR \(rhs.sqlString)"
+        case .not(let expression): return "NOT \(wrap(expression))"
+        case .group(let expression): return "(\(expression.sqlString))"
+        case .compare(let key, let op, let value): return compareAction(key: key, op: op, value: value)
         }
     }
     
-    /// [轉成SQL語法](http://tw.gitbook.net/sqlite/sqlite_using_autoincrement.html)
-    /// - number INTEGER DEFAULT 0 NOT NULL COLLATE NOCASE
-    /// - Returns: [String](https://www.sqlite.org/datatype3.html)
-    func toSQL() -> String {
-        
-        switch self {
-        case .INTEGER(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
-        case .TEXT(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
-        case .BLOB(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
-        case .REAL(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
-        case .NUMERIC(let attribute, let defaultValue): return sqlStringMaker(attribute: attribute, defaultValue: defaultValue)
-        case .TIMESTAMP(let defaultValue): return timestampString(defaultValue: defaultValue)
-        }
-    }
-}
-
-// MARK: - 小工具
-public extension WWSQLite3Manager.DataType {
-
-    /// 組成SQL字串
-    /// - Parameters:
-    ///   - attribute: SQLite3Condition.Attribute
-    ///   - defaultValue: T?
+    /// 處理一般比較運算式
     /// - Returns: String
-    func sqlStringMaker<T>(attribute: WWSQLite3Manager.Attribute, defaultValue: T?) -> String {
+    /// - Note:
+    ///   - 當 value 為 NULL 時，equal / notEqual 會改寫成 IS NULL / IS NOT NULL
+    ///   - 其餘運算子若搭配 NULL，仍保留原始運算子字串
+    func compareAction(key: String, op: WWSQLite3Manager.CompareOperator, value: WWSQLite3Manager.SQLValue) -> String {
         
-        var sql = self.toString()
+        if case .null = value {
+            switch op {
+            case .equal: return "\(key) IS NULL"
+            case .notEqual: return "\(key) IS NOT NULL"
+            default: return "\(key) \(op.rawValue) NULL"
+            }
+        }
         
-        if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }
-        if (attribute.isNotNull) { sql += " NOT NULL" }
-        if (attribute.isNoCase) { sql += " COLLATE NOCASE" }
-        if (attribute.isUnique) { sql += " UNIQUE" }
-        
-        return sql
+        return "\(key) \(op.rawValue) \(value.sqlString)"
     }
     
-    /// [組成TimeStamp字串](https://www.cnblogs.com/endv/p/12129481.html)
-    /// - Parameters:
-    ///   - defaultValue: String
+    /// 依照條件型別決定是否需要補上括號
     /// - Returns: String
-    func timestampString(defaultValue: String?) -> String {
+    /// - Note:
+    ///   - 單一條件不額外包裝
+    ///   - 複合條件（AND / OR / NOT）會自動加上括號以確保邏輯正確
+    func wrap(_ expression: WWSQLite3Manager.WhereExpression) -> String {
         
-        var sql = self.toString()
-        if let defaultValue = defaultValue { sql += " DEFAULT \(defaultValue)" }
-        
-        return sql
+        switch expression {
+        case .compare, .between, .notBetween, .like, .notLike, .in, .notIn: return expression.sqlString
+        case .group: return expression.sqlString
+        case .and, .or, .not: return "(\(expression.sqlString))"
+        }
+    }
+    
+    /// 將字串加上單引號，並處理 SQL 單引號跳脫
+    /// - Returns: String
+    func quoted(_ string: String) -> String {
+        "'\(string.replacingOccurrences(of: "'", with: "''"))'"
+    }
+    
+    /// 產生 LIKE / NOT LIKE 使用的 ESCAPE 子句
+    /// - Parameter escape: 跳脫字元
+    /// - Returns: 若 escape 為 nil，則回傳空字串
+    func escapeClause(_ escape: Character?) -> String {
+        guard let escape else { return "" }
+        return " ESCAPE '\(escape)'"
+    }
+    
+    /// 將多個 SQLValue 串接成逗號分隔字串
+    /// - Returns: String
+    /// - Example: 1, 'A', NULL
+    func joined(_ values: [WWSQLite3Manager.SQLValue]) -> String {
+        values.map(\.sqlString).joined(separator: ", ")
     }
 }

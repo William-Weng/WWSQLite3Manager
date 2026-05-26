@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension WWSQLite3Manager.Condition {
+public extension WWSQLite3Manager {
     
     /// [數量取得條件](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
     public class Limit: NSObject {
@@ -16,7 +16,7 @@ public extension WWSQLite3Manager.Condition {
 }
 
 // MARK: - Limit
-public extension WWSQLite3Manager.Condition.Limit {
+public extension WWSQLite3Manager.Limit {
     
     /// 產生數量取得條件
     /// - LIMIT 3 OFFSET 2

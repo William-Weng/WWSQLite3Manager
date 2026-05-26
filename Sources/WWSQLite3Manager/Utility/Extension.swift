@@ -8,49 +8,49 @@
 import Foundation
 import SQLite3
 
-// MARK: - OpaquePointer (public function)
-public extension OpaquePointer {
+// MARK: - OpaquePointer
+extension OpaquePointer {
     
     /// 取得資料庫的數據
     /// - Parameters:
     ///   - column: 第幾列？
     ///   - dataType: 類型
     /// - Returns: Any?
-    func _value(at column: Int32, dataType: WWSQLite3Manager.DataType) -> Any? {
+    func value(at column: Int32, dataType: WWSQLite3Manager.DataType) -> Any? {
         
         switch dataType {
-        case .INTEGER: return self._Int32(at: column)
-        case .REAL: return self._Double(at: column)
-        case .BLOB: return self._Blob(at: column)
-        case .TEXT: return self._String(at: column)
-        case .NUMERIC: return self._String(at: column)
-        case .TIMESTAMP: return self._String(at: column)
+        case .INTEGER: return int32(at: column)
+        case .REAL: return double(at: column)
+        case .BLOB: return blob(at: column)
+        case .TEXT: return string(at: column)
+        case .NUMERIC: return string(at: column)
+        case .TIMESTAMP: return string(at: column)
         }
     }
 }
 
 // MARK: - OpaquePointer (function)
-extension OpaquePointer {
+private extension OpaquePointer {
     
     /// SQLite指標 => Int32
     /// - Parameter column: Int32
     /// - Returns: Int32
-    func _Int32(at column: Int32) -> Int32 { return sqlite3_column_int(self, column) }
+    func int32(at column: Int32) -> Int32 { return sqlite3_column_int(self, column) }
     
     /// SQLite指標 => Int64
     /// - Parameter column: Int32
     /// - Returns: Int64
-    func _Int64(at column: Int32) -> Int64 { return sqlite3_column_int64(self, column) }
+    func int64(at column: Int32) -> Int64 { return sqlite3_column_int64(self, column) }
     
     /// SQLite指標 => Double
     /// - Parameter column: Int32
     /// - Returns: Double
-    func _Double(at column: Int32) -> Double { return sqlite3_column_double(self, column) }
+    func double(at column: Int32) -> Double { return sqlite3_column_double(self, column) }
     
     /// SQLite指標 => String
     /// - Parameter column: Int32
     /// - Returns: String?
-    func _String(at column: Int32) -> String? {
+    func string(at column: Int32) -> String? {
         guard let cString = sqlite3_column_text(self, column) else { return nil }
         return String(cString: cString)
     }
@@ -58,14 +58,11 @@ extension OpaquePointer {
     /// [SQLite指標 => Blob => Data](https://stackoverflow.com/questions/28297970/read-blob-data-extra-argument-bytes-in-call-swift)
     /// - Parameter column: Int32
     /// - Returns: Data?
-    func _Blob(at column: Int32) -> Data? {
+    func blob(at column: Int32) -> Data? {
         
-        guard let bytes = sqlite3_column_blob(self, column),
-              let count = Optional.some(Int(sqlite3_column_bytes(self, column)))
-        else {
-            return nil
-        }
+        guard let bytes = sqlite3_column_blob(self, column) else { return nil }
         
+        let count = Int(sqlite3_column_bytes(self, column))
         return Data(bytes: bytes, count: count)
     }
 }

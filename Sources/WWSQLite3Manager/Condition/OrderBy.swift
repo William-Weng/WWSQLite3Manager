@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension WWSQLite3Manager.Condition {
+public extension WWSQLite3Manager {
     
     /// [數量取得條件](https://www.runoob.com/sqlite/sqlite-limit-clause.html)
     public class OrderBy: NSObject {
@@ -16,7 +16,7 @@ public extension WWSQLite3Manager.Condition {
 }
 
 // MARK: - OrderBy
-public extension WWSQLite3Manager.Condition.OrderBy {
+public extension WWSQLite3Manager.OrderBy {
 
     /// 組成排序用字串 => name ASC
     /// - Parameters:
@@ -44,7 +44,7 @@ public extension WWSQLite3Manager.Condition.OrderBy {
 }
 
 // MARK: - 小工具
-public extension WWSQLite3Manager.Condition.OrderBy {
+public extension WWSQLite3Manager.OrderBy {
 
     /// 解析SQLite3Condition.OrderByType
     /// - Parameter type: SQLite3Condition.OrderByType
