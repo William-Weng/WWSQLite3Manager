@@ -34,14 +34,11 @@ public extension WWSQLite3Manager {
         case desc = "DESC"                                                  // 降冪排序
     }
     
-    /// SQLite 交易控制指令類型
-    ///
-    /// 對應 SQLite 常見的交易語法字串，可用於開始、提交或回滾交易
-    enum TransactionType: String {
-        
-        case begin = "BEGIN"                                                // 開始交易
-        case commit = "COMMIT"                                              // 提交交易
-        case rollback = "ROLLBACK"                                          // 回滾交易
+    /// SQLite 開始交易時的模式 => 用來指定 `BEGIN TRANSACTION` 的鎖定行為與交易啟動時機
+    enum BeginTransactionType: String {
+        case deferred = "BEGIN DEFERRED TRANSACTION"                        // 延遲開始交易
+        case immediate = "BEGIN IMMEDIATE TRANSACTION"                      // 立即開始寫入交易
+        case exclusive = "BEGIN EXCLUSIVE TRANSACTION"                      // 獨佔交易
     }
     
     /// 表示 SQL 條件比較運算子 => 用於 WHERE 子句中的欄位比較

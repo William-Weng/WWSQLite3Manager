@@ -38,7 +38,7 @@
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.1.0"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.1.1"))
 ]
 ```
 
@@ -67,6 +67,10 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 | `delete(tableName:where:)` | 執行 `DELETE` 查詢。 |
 | `select(tableName:type:where:groupBy:having:orderBy:limit:)` | 執行以 schema 為基礎的 `SELECT` 查詢。 |
 | `select(tableName:methods:where:groupBy:having:orderBy:limit:)` | 執行自訂欄位投影的 `SELECT` 查詢。 |
+| `begin(type:)` | 依指定模式開始 transaction。 |
+| `commit()` | 提交目前 transaction 的所有變更。 |
+| `rollback()` | 回滾目前 transaction 中尚未提交的變更。 |
+| `transaction(type:_:)` | 在 block 內執行 transaction，成功時自動提交，失敗時自動回滾。 |
 
 ---
 

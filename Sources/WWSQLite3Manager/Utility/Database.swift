@@ -9,13 +9,16 @@
 import Foundation
 import SQLite3
 
-// MARK: - 執行資料庫的功能
+// MARK: - 資料庫
 public extension WWSQLite3Manager {
     
+    /// 已開啟的 SQLite 資料庫連線資訊
+    ///
+    /// 封裝資料庫檔案位置與底層 SQLite connection handle，可用來描述目前已建立的資料庫連線狀態。
     struct Database {
         
-        public let fileURL: URL
-        public let database: OpaquePointer
+        public let fileURL: URL                 // 資料庫檔案位置
+        public let database: OpaquePointer      // SQLite 資料庫連線物件
     }
 }
 
@@ -90,7 +93,7 @@ public extension WWSQLite3Manager.Database {
 
 // MARK: - 公開函式
 public extension WWSQLite3Manager.Database {
-
+    
     /// 取得該Table的結構組成
     /// - PRAGMA TABLE_INFO(students)
     /// - Parameter tableName: String
@@ -125,7 +128,7 @@ public extension WWSQLite3Manager.Database {
         
         return sql
     }
-        
+    
     /// [刪除資料表](https://www.sqlitetutorial.net/sqlite-drop-table/)
     /// - Parameters:
     ///   - tableName: 資料表名稱
@@ -168,17 +171,107 @@ public extension WWSQLite3Manager.Database {
         
         return sql
     }
+}
+
+// MARK: - 事務處理
+public extension WWSQLite3Manager.Database {
     
-    /// [事務處理](https://www.itread01.com/p/398053.html)
-    /// - Parameter type: TransactionType
-    /// - Returns: Bool
+    /// [開始交易](https://www.itread01.com/p/398053.html)
+    ///
+    /// 依照指定的交易模式執行 `BEGIN ... TRANSACTION`，
+    /// 用來建立一個新的 SQLite transaction。
+    ///
+    /// - Note:
+    ///   - `type` 可指定 `DEFERRED`、`IMMEDIATE` 或 `EXCLUSIVE` 模式
+    ///   - `DEFERRED` 為 SQLite 的預設交易模式
+    ///   - 若目前已有尚未結束的 transaction，再次呼叫 `BEGIN` 可能會失敗
+    ///
+    /// - Parameter type: 交易開始模式
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   若 SQL 執行失敗，拋出對應錯誤
     @discardableResult
-    func transaction(type: WWSQLite3Manager.TransactionType) throws -> String {
+    func begin(type: WWSQLite3Manager.BeginTransactionType) throws -> String {
         
-        let sql = "\(type.rawValue) TRANSACTION"
+        let sql = type.rawValue
         try execute(sql: sql)
         
         return sql
+    }
+    
+    /// 提交交易
+    ///
+    /// 執行 `COMMIT TRANSACTION`，將目前 transaction 中的所有變更正式寫入資料庫
+    ///
+    /// - Note:
+    ///   - 只有在 transaction 成功完成後才應呼叫 `commit()`
+    ///   - 若目前沒有進行中的 transaction，執行結果可能會失敗
+    ///
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   若 SQL 執行失敗，拋出對應錯誤
+    @discardableResult
+    func commit() throws -> String {
+        
+        let sql = "COMMIT TRANSACTION"
+        try execute(sql: sql)
+        
+        return sql
+    }
+    
+    /// 回滾交易
+    ///
+    /// 執行 `ROLLBACK TRANSACTION`，取消目前 transaction 中所有尚未提交的變更
+    ///
+    /// - Note:
+    ///   - 當 transaction 中途發生錯誤時，通常應呼叫 `rollback()`
+    ///   - 若目前沒有進行中的 transaction，執行結果可能會失敗
+    ///
+    /// - Returns:
+    ///   實際執行的 SQL 字串
+    /// - Throws:
+    ///   若 SQL 執行失敗，拋出對應錯誤
+    @discardableResult
+    func rollback() throws -> String {
+        
+        let sql = "ROLLBACK TRANSACTION"
+        try execute(sql: sql)
+        
+        return sql
+    }
+    
+    /// 在 transaction 範圍內執行指定工作
+    ///
+    /// 會先依指定模式開始 transaction，若 block 內所有操作都成功，則自動提交；若中途拋出錯誤，則自動回滾
+    ///
+    /// - Note:
+    ///   - 成功時會自動執行 `commit()`
+    ///   - 發生錯誤時會自動執行 `rollback()`
+    ///   - SQLite 的 `BEGIN ... COMMIT` 不支援巢狀 transaction；若有巢狀需求，建議改用 `SAVEPOINT`
+    ///
+    /// - Parameters:
+    ///   - type: transaction 開始模式
+    ///   - block: 要在 transaction 內執行的工作內容
+    /// - Returns:
+    ///   block 執行成功後回傳的結果
+    /// - Throws:
+    ///   - block 內拋出的錯誤
+    ///   - transaction 開始、提交或回滾失敗時的錯誤
+    @discardableResult
+    func transaction<T>(type: WWSQLite3Manager.BeginTransactionType = .deferred, _ block: () throws -> T) throws -> T {
+        
+        try begin(type: type)
+        
+        do {
+            let result = try block()
+            try commit()
+            return result
+        } catch {
+            try? rollback()
+            throw error
+        }
     }
 }
 

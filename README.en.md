@@ -40,7 +40,7 @@ One of the package's key design ideas is to separate table schema definition fro
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.1.0"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.1.1"))
 ]
 ```
 
@@ -69,6 +69,14 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 | `delete(tableName:where:)` | Execute a `DELETE` query. |
 | `select(tableName:type:where:groupBy:having:orderBy:limit:)` | Execute a schema-based `SELECT` query. |
 | `select(tableName:methods:where:groupBy:having:orderBy:limit:)` | Execute a custom projection `SELECT` query. |
+| `begin(type:)` | Begin a transaction with the specified mode. |
+| `commit()` | Commit all changes in the current transaction. |
+| `rollback()` | Roll back all uncommitted changes in the current transaction. |
+| `transaction(type:_:)` | Execute work inside a transaction block with automatic commit or rollback. |
+| `begin(type:)` | Begin a transaction using the specified mode. |
+| `commit()` | Commit all changes in the current transaction. |
+| `rollback()` | Roll back all uncommitted changes in the current transaction. |
+| `transaction(type:_:)` | Execute work inside a transaction block, automatically committing on success and rolling back on failure. |
 
 ---
 
