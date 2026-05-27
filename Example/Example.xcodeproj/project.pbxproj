@@ -457,7 +457,7 @@
 			repositoryURL = "https://github.com/William-Weng/WWSQLite3Manager";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.2.1;
+				minimumVersion = 2.2.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

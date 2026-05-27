@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/William-Weng/WWSQLite3Manager",
       "state" : {
-        "revision" : "4df131f2a78c000bbc232ef905b267bdef87bf3d",
-        "version" : "2.2.1"
+        "revision" : "b2b984c645659cb396ebdbda7f3eeba19a46dfda",
+        "version" : "2.2.2"
       }
     }
   ],
