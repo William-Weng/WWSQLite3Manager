@@ -38,7 +38,7 @@
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.2.1"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.2.2"))
 ]
 ```
 
@@ -112,10 +112,13 @@ import UIKit
 import WWSQLite3Manager
 
 final class ViewController: UIViewController {
-        
+    
+    @IBOutlet weak var sqlLabel: UILabel!
+    @IBOutlet weak var resultLabel: UILabel!
+    
     private let filename = "sqlite3.db"
     private let tableName = "students"
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -137,8 +140,8 @@ final class ViewController: UIViewController {
             try database.insert(tableName: tableName, itemsArray: [items])
             let result = database.select(tableName: tableName, type: Student.self, where: `where`)
             
-            print(result.sql)
-            print(result.array)
+            sqlLabel.text = result.sql
+            resultLabel.text = String(describing: result.array)
             
         } catch {
             print(error)

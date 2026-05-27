@@ -21,26 +21,30 @@ final class FTS5Demo {
         self.config = .init(table: tableName, ftsTable: ftsTableName, rowID: "id", indexedColumns: ["title", "body"])
     }
     
-    func run() throws {
+    func run() throws -> [String] {
         
         try prepareDatabase()
         try seedData()
         try rebuildIndex()
         
-        try printSearch(keyword: "検索")
-        try printSearch(keyword: "Swift")
-        try printSearch(keyword: "藍牙")
+        let texts1 = try printSearch(keyword: "検索")
+        let texts2 = try printSearch(keyword: "Swift")
+        let texts3 = try printSearch(keyword: "藍牙")
+                
+        return [texts1, texts2, texts3].flatMap { $0 }
     }
     
-    func testUpdateAndDelete() throws {
+    func testUpdateAndDelete() throws -> [String] {
         
         try database.execute(sql: "UPDATE notes SET body = 'Updated text about full text search' WHERE id = 1")
         try rebuildIndex()
-        try printSearch(keyword: "Updated")
+        let texts1 =  try printSearch(keyword: "Updated")
         
         try database.execute(sql: "DELETE FROM notes WHERE id = 2")
         try rebuildIndex()
-        try printSearch(keyword: "藍牙")
+        let texts2 = try printSearch(keyword: "藍牙")
+        
+        return [texts1, texts2].flatMap { $0 }
     }
 }
 
@@ -83,22 +87,26 @@ private extension FTS5Demo {
         try database.rebuildFTS5Index(ftsTable: config.ftsTable)
     }
     
-    func printSearch(keyword: String) throws {
+    func printSearch(keyword: String) throws -> [String] {
         
         let results = try database.searchFTS5(ftsTable: config.ftsTable, keyword: keyword, highlightColumn: 0, snippetColumn: 1, snippetLength: 24, limit: 20, offset: 0)
         
-        print("==== keyword: \(keyword) ====")
+        var texts: [String] = []
+        
+        texts.append("==== keyword: \(keyword) ====")
         
         if results.isEmpty {
-            print("No results")
+            texts.append("No results")
         } else {
             for item in results {
-                print("rowID: \(item.rowID)")
-                print("rank: \(item.rank ?? 0)")
-                print("highlighted: \(item.highlightedText ?? "-")")
-                print("snippet: \(item.snippet ?? "-")")
-                print("")
+                texts.append("rowID: \(item.rowID)")
+                texts.append("rank: \(item.rank ?? 0)")
+                texts.append("highlighted: \(item.highlightedText ?? "-")")
+                texts.append("snippet: \(item.snippet ?? "-")")
+                texts.append("")
             }
         }
+        
+        return texts
     }
 }

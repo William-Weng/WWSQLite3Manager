@@ -9,7 +9,9 @@ import UIKit
 import WWSQLite3Manager
 
 final class FTS5ViewController: UIViewController {
-        
+    
+    @IBOutlet weak var resultLabel: UILabel!
+    
     private let filename = "fts5.db"
     
     override func viewDidLoad() {
@@ -26,8 +28,10 @@ final class FTS5ViewController: UIViewController {
             let database = try WWSQLite3Manager.shared.connect(fileURL: fileURL)
             
             let demo = FTS5Demo(database: database)
-            try demo.run()
-            try demo.testUpdateAndDelete()
+            let text1 = try demo.run()
+            let text2 = try demo.testUpdateAndDelete()
+            
+            resultLabel.text = "\([text1, text2].flatMap { $0 }))"
             
             try database.close()
             
