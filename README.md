@@ -13,6 +13,7 @@
 一套輕量級的 Swift SQLite3 工具，讓資料表定義、CRUD、條件查詢，以及聚合查詢都更直覺、更容易維護。
 
 https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
+
 ---
 
 ## ✨ 功能特色

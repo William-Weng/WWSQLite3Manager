@@ -13,6 +13,7 @@
 A lightweight SQLite3 helper for Swift that makes schema definition, CRUD, conditional queries, and aggregate selection easier to read and maintain.
 
 https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
+
 ---
 
 ## ✨ Features
