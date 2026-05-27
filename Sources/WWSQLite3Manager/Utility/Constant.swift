@@ -17,6 +17,10 @@ public extension WWSQLite3Manager {
         case notOpenURL                                                     // 無法開啟指定的資料庫 URL
         case missingItems                                                   // 缺少必要的資料項目
         case sqlite(operation: Operation, code: Int32, message: String)     // SQLite 操作失敗 (操作類型, 錯誤碼, 錯誤訊息)
+        case fts5TableEmpty                                                 // FTS5 表名稱為空或無效
+        case fts5MissingIndexedColumns                                      // FTS5 的 indexedColumns 為空
+        case fts5TokenizerUnsupported(String)                               // FTS5 tokenizer 不支援 (原始 tokenizer 字串)
+        case fts5InvalidColumnIndex(index: Int, count: Int)                 // FTS5 欄位索引超出範圍 (實際使用的欄位索引, 可用欄位數量)
     }
     
     /// SQLite 執行流程中的操作類型 => 可用來標示錯誤發生於哪一個 SQLite 呼叫階段，方便除錯與記錄
@@ -39,6 +43,14 @@ public extension WWSQLite3Manager {
         case deferred = "BEGIN DEFERRED TRANSACTION"                        // 延遲開始交易
         case immediate = "BEGIN IMMEDIATE TRANSACTION"                      // 立即開始寫入交易
         case exclusive = "BEGIN EXCLUSIVE TRANSACTION"                      // 獨佔交易
+    }
+    
+    /// [FTS5 內建 tokenizer 選項](https://sqlite.ac.cn/fts5.html)
+    enum FTS5Tokenizer: String {
+        case unicode61                                                      // 預設分詞器，適合一般 Unicode / 英文 / 混合語系文本
+        case ascii                                                          // 類似 unicode61，但偏向 ASCII 行為，適合較單純的英文文本
+        case porter                                                         // 以 unicode61 為基礎，額外加入英文詞幹還原（stemmer）
+        case trigram                                                        // 以三字元片段做索引，適合子字串搜尋或較彈性的匹配需求。
     }
     
     /// 表示 SQL 條件比較運算子 => 用於 WHERE 子句中的欄位比較
@@ -278,6 +290,10 @@ private extension WWSQLite3Manager.CustomError {
         case .notOpenURL: return "資料庫尚未開啟或 URL 無效"
         case .missingItems: return "資料缺失"
         case .sqlite(let operation, let code, let message): return "SQLite錯誤 [\(operation.rawValue)] (\(code))：\(message)"
+        case .fts5TableEmpty: return "FTS5 表名稱不可為空"
+        case .fts5MissingIndexedColumns: return "缺少 FTS5 要索引的欄位"
+        case .fts5TokenizerUnsupported(let tokenizer): return "不支援的 FTS5 tokenizer：\(tokenizer)"
+        case .fts5InvalidColumnIndex(let index, let count): return "FTS5 欄位索引超出範圍：\(index) / \(count)"
         }
     }
     
@@ -293,6 +309,10 @@ private extension WWSQLite3Manager.CustomError {
         case .notOpenURL: return "資料庫連線資訊不存在"
         case .missingItems: return "找不到可用的資料項目"
         case .sqlite(let operation, let code, _): return "執行 SQLite 的 \(operation.rawValue) 時失敗，錯誤碼：\(code)"
+        case .fts5TableEmpty: return "FTS5 虛擬表名稱無效"
+        case .fts5MissingIndexedColumns: return "FTS5 的 indexedColumns 為空"
+        case .fts5InvalidColumnIndex(let index, let count): return "FTS5 的欄位索引超出範圍，index: \(index), count: \(count)"
+        case .fts5TokenizerUnsupported(let tokenizer): return "FTS5 tokenizer 不支援：\(tokenizer)"
         }
     }
     
@@ -309,6 +329,10 @@ private extension WWSQLite3Manager.CustomError {
         case .unknown: return "請重新檢查流程或紀錄錯誤資訊"
         case .notOpenURL: return "請先確認資料庫是否已正確開啟"
         case .missingItems: return "請先確認資料內容不為空，並至少包含一筆可供處理的資料"
+        case .fts5TableEmpty: return "請先提供有效的 FTS5 表名稱"
+        case .fts5MissingIndexedColumns: return "請先至少指定一個可索引欄位"
+        case .fts5InvalidColumnIndex(let index, let count): return "請確認欄位索引是否在 0 到 \(count - 1) 之間，目前索引為 \(index)"
+        case .fts5TokenizerUnsupported(let tokenizer): return "請改用支援的 tokenizer，例如 unicode61、ascii、porter 或 trigram，目前值為 \(tokenizer)"
         case .sqlite(let operation, _, _):
             switch operation {
             case .execute: return "請檢查 SQL 語法是否正確，像是 CREATE、DROP、PRAGMA 這類語句。"

@@ -18,7 +18,7 @@ public extension WWSQLite3Manager {
         public let ftsTable: String
         public let rowID: String
         public let indexedColumns: [String]
-        public let tokenizer: String
+        public let tokenizer: FTS5Tokenizer
         
         /// 建立 FTS5 設定
         /// - Parameters:
@@ -27,7 +27,7 @@ public extension WWSQLite3Manager {
         ///   - rowID: 主鍵欄位名稱
         ///   - indexedColumns: 要索引的欄位清單
         ///   - tokenizer: tokenizer 設定 (預設 "unicode61")
-        public init(table: String, ftsTable: String, rowID: String = "id", indexedColumns: [String], tokenizer: String = "unicode61") {
+        public init(table: String, ftsTable: String, rowID: String = "id", indexedColumns: [String], tokenizer: FTS5Tokenizer = .unicode61) {
             self.table = table
             self.ftsTable = ftsTable
             self.rowID = rowID
@@ -45,8 +45,10 @@ public extension WWSQLite3Manager.Database {
     /// - Throws: SQLite 錯誤
     func createFTS5Table(_ config: WWSQLite3Manager.FTS5Configuration) throws {
         
+        guard !config.indexedColumns.isEmpty else { throw WWSQLite3Manager.CustomError.missingItems }
+        
         let columnsSQL = config.indexedColumns.map { "\"\($0)\"" }.joined(separator: ", ")
-        let sql = #"CREATE VIRTUAL TABLE "\#(config.ftsTable)" USING fts5(\#(columnsSQL), content="\#(config.table)", content_rowid="\#(config.rowID)", tokenize="\#(config.tokenizer)")"#
+        let sql = #"CREATE VIRTUAL TABLE "\#(config.ftsTable)" USING fts5(\#(columnsSQL), content="\#(config.table)", content_rowid="\#(config.rowID)", tokenize="\#(config.tokenizer.rawValue)")"#
         
         try execute(sql: sql)
     }

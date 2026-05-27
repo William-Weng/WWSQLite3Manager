@@ -12,7 +12,7 @@ final class ViewController: UIViewController {
         
     private let filename = "sqlite3.db"
     private let tableName = "students"
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -36,6 +36,8 @@ final class ViewController: UIViewController {
             
             print(result.sql)
             print(result.array)
+            
+            try database.close()
             
         } catch {
             print(error)

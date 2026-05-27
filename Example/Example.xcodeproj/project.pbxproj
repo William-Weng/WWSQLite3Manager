@@ -15,11 +15,14 @@
 		810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 810D14E92DE4107200FC4564 /* WWSQLite3Manager */; };
 		811F0C872FC552F500E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C862FC552F500E42052 /* WWSQLite3Manager */; };
 		811F0C8D2FC5720800E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C8C2FC5720800E42052 /* WWSQLite3Manager */; };
+		8127C0672FC684FB00A8C599 /* FTS5Demo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8127C0662FC684FB00A8C599 /* FTS5Demo.swift */; };
+		8127C0692FC6852A00A8C599 /* FTS5ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8127C0682FC6852A00A8C599 /* FTS5ViewController.swift */; };
+		81696EBC2FC68A30004DE50B /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81696EBB2FC68A30004DE50B /* WWSQLite3Manager */; };
+		81696EBF2FC6997A004DE50B /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81696EBE2FC6997A004DE50B /* WWSQLite3Manager */; };
 		817EC85D2FBDA5D500598880 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 817EC85C2FBDA5D500598880 /* WWSQLite3Manager */; };
 		819D96A12791193B000CFB51 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819D96A02791193B000CFB51 /* Model.swift */; };
 		819D96A327911962000CFB51 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819D96A227911962000CFB51 /* Extension.swift */; };
 		81A6C2ED2FC5977C00859B24 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81A6C2EC2FC5977C00859B24 /* WWSQLite3Manager */; };
-		81B89E0C2FC68469008FEE74 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81B89E0B2FC68469008FEE74 /* WWSQLite3Manager */; };
 		81DF9C262FC590CF00734CDF /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81DF9C252FC590CF00734CDF /* WWSQLite3Manager */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +34,8 @@
 		3DBCD87C26F198F300522E3B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3DBCD87F26F198F300522E3B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3DBCD88126F198F300522E3B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8127C0662FC684FB00A8C599 /* FTS5Demo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTS5Demo.swift; sourceTree = "<group>"; };
+		8127C0682FC6852A00A8C599 /* FTS5ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTS5ViewController.swift; sourceTree = "<group>"; };
 		819D96A02791193B000CFB51 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		819D96A227911962000CFB51 /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -41,11 +46,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				817EC85D2FBDA5D500598880 /* WWSQLite3Manager in Frameworks */,
-				81B89E0C2FC68469008FEE74 /* WWSQLite3Manager in Frameworks */,
+				81696EBC2FC68A30004DE50B /* WWSQLite3Manager in Frameworks */,
 				81DF9C262FC590CF00734CDF /* WWSQLite3Manager in Frameworks */,
 				811F0C872FC552F500E42052 /* WWSQLite3Manager in Frameworks */,
 				811F0C8D2FC5720800E42052 /* WWSQLite3Manager in Frameworks */,
 				81A6C2ED2FC5977C00859B24 /* WWSQLite3Manager in Frameworks */,
+				81696EBF2FC6997A004DE50B /* WWSQLite3Manager in Frameworks */,
 				810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,6 +93,7 @@
 			children = (
 				81C346AB2795458F008D2AED /* Utility */,
 				3DBCD87726F198EF00522E3B /* ViewController.swift */,
+				8127C0682FC6852A00A8C599 /* FTS5ViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -128,6 +135,7 @@
 			children = (
 				819D96A02791193B000CFB51 /* Model.swift */,
 				819D96A227911962000CFB51 /* Extension.swift */,
+				8127C0662FC684FB00A8C599 /* FTS5Demo.swift */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -155,7 +163,8 @@
 				811F0C8C2FC5720800E42052 /* WWSQLite3Manager */,
 				81DF9C252FC590CF00734CDF /* WWSQLite3Manager */,
 				81A6C2EC2FC5977C00859B24 /* WWSQLite3Manager */,
-				81B89E0B2FC68469008FEE74 /* WWSQLite3Manager */,
+				81696EBB2FC68A30004DE50B /* WWSQLite3Manager */,
+				81696EBE2FC6997A004DE50B /* WWSQLite3Manager */,
 			);
 			productName = Example;
 			productReference = 3DBCD87026F198EF00522E3B /* Example.app */;
@@ -186,7 +195,7 @@
 			);
 			mainGroup = 3DBCD86726F198EF00522E3B;
 			packageReferences = (
-				81B89E0A2FC68469008FEE74 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
+				81696EBD2FC6997A004DE50B /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
 			);
 			productRefGroup = 3DBCD87126F198EF00522E3B /* Products */;
 			projectDirPath = "";
@@ -217,6 +226,8 @@
 			files = (
 				819D96A12791193B000CFB51 /* Model.swift in Sources */,
 				3DBCD87826F198EF00522E3B /* ViewController.swift in Sources */,
+				8127C0692FC6852A00A8C599 /* FTS5ViewController.swift in Sources */,
+				8127C0672FC684FB00A8C599 /* FTS5Demo.swift in Sources */,
 				3DBCD87426F198EF00522E3B /* AppDelegate.swift in Sources */,
 				819D96A327911962000CFB51 /* Extension.swift in Sources */,
 			);
@@ -438,12 +449,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		81B89E0A2FC68469008FEE74 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
+		81696EBD2FC6997A004DE50B /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/William-Weng/WWSQLite3Manager";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.1.1;
+				minimumVersion = 2.2.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -461,17 +472,21 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
 		};
+		81696EBB2FC68A30004DE50B /* WWSQLite3Manager */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WWSQLite3Manager;
+		};
+		81696EBE2FC6997A004DE50B /* WWSQLite3Manager */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81696EBD2FC6997A004DE50B /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
+			productName = WWSQLite3Manager;
+		};
 		817EC85C2FBDA5D500598880 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
 		};
 		81A6C2EC2FC5977C00859B24 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = WWSQLite3Manager;
-		};
-		81B89E0B2FC68469008FEE74 /* WWSQLite3Manager */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 81B89E0A2FC68469008FEE74 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
 			productName = WWSQLite3Manager;
 		};
 		81DF9C252FC590CF00734CDF /* WWSQLite3Manager */ = {

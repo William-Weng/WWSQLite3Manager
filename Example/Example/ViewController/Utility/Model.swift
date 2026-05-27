@@ -17,7 +17,14 @@ final class Student: Codable {
     let time: Date?
 }
 
-// MARK: - SQLite3SchemeDelegate
+struct Note {
+    
+    let id: Int64
+    let title: String
+    let body: String
+}
+
+// MARK: - SchemeDelegate
 extension Student: WWSQLite3Manager.SchemeDelegate {
     
     static func structure() -> [WWSQLite3Manager.SchemeColumn] {
@@ -28,6 +35,21 @@ extension Student: WWSQLite3Manager.SchemeDelegate {
             (key: "height", type: .REAL()),
             (key: "image", type: .BLOB()),
             (key: "time", type: .TIMESTAMP()),
+        ]
+        
+        return keyTypes
+    }
+}
+
+// MARK: - SchemeDelegate
+extension Note: WWSQLite3Manager.SchemeDelegate {
+    
+    static func structure() -> [WWSQLite3Manager.SchemeColumn] {
+        
+        let keyTypes: [WWSQLite3Manager.SchemeColumn] = [
+            (key: "id", type: .INTEGER()),
+            (key: "title", type: .TEXT()),
+            (key: "body", type: .TEXT())
         ]
         
         return keyTypes
