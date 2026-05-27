@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  Example
 //
-//  Created by William.Weng on 2022/01/01.
+//  Created by William.Weng on 2026/05/27.
 //
 
 import UIKit
@@ -13,21 +13,15 @@ final class ViewController: UIViewController {
     private let filename = "sqlite3.db"
     private let tableName = "students"
         
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         do {
             let database = try WWSQLite3Manager.shared.connect(filename: filename)
             
-            try database.drop(tableName: tableName)
+            try database.drop(tableName: tableName, ifExists: true)
             try database.create(tableName: tableName, type: Student.self, ifNotExists: true)
             
-            print(database.fileURL)
-
             let items: [WWSQLite3Manager.InsertItem] = [
                 (key: "name", value: "William.Weng"),
                 (key: "height", value: 180.87),
@@ -38,9 +32,10 @@ final class ViewController: UIViewController {
                 .and("name", .like, .text("%William%"))
             
             try database.insert(tableName: tableName, itemsArray: [items])
-            let info = database.select(tableName: tableName, type: Student.self, where: `where`)
+            let result = database.select(tableName: tableName, type: Student.self, where: `where`)
             
-            print(info.array)
+            print(result.sql)
+            print(result.array)
             
         } catch {
             print(error)
