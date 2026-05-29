@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.2.2"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.3.0"))
 ]
 ```
 
@@ -52,10 +52,13 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 
 ## 🛠️ 公開 API
 
-| API | 說明 |
+| API (WWSQLite3Manager) | 說明 |
 |---|---|
 | `connect(fileURL:)` | 建立 SQLite 連線。 |
 | `connect(for:filename:)` | 使用指定位置與檔名建立 SQLite 連線。 |
+
+| API (Database) | 說明 |
+|---|---|
 | `execute(sql:)` | 直接執行原生 SQL。 |
 | `prepare(sql:)` | 預備並執行 SQL 語句。 |
 | `query(sql:result:completion:)` | 執行原生 `SELECT` 查詢。 |
@@ -110,9 +113,6 @@ extension Student: WWSQLite3Manager.SchemeDelegate {
 ### 2. 連線、建表、寫入與查詢
 
 ```swift
-import UIKit
-import WWSQLite3Manager
-
 final class ViewController: UIViewController {
     
     @IBOutlet weak var sqlLabel: UILabel!
@@ -131,8 +131,8 @@ final class ViewController: UIViewController {
             try database.create(tableName: tableName, type: Student.self, ifNotExists: true)
             
             let items: [WWSQLite3Manager.InsertItem] = [
-                (key: "name", value: "William.Weng"),
-                (key: "height", value: 180.87),
+                (key: "name", value: .string("William.Weng")),
+                (key: "height", value: .double(180.87)),
             ]
             
             let `where`: WWSQLite3Manager.Where = .init()
@@ -144,6 +144,46 @@ final class ViewController: UIViewController {
             
             sqlLabel.text = result.sql
             resultLabel.text = String(describing: result.array)
+            
+        } catch {
+            print(error)
+        }
+    }
+}
+```
+
+### 3. FTS5查詢功能
+
+```swift
+import UIKit
+import WWSQLite3Manager
+
+final class FTS5ViewController: UIViewController {
+    
+    @IBOutlet weak var resultLabel: UILabel!
+    
+    private let filename = "fts5.db"
+    
+    override func viewDidLoad() {
+        
+        super.viewDidLoad()
+        
+        do {
+            let fileURL = URL.documentsDirectory.appendingPathComponent(filename)
+                        
+            if FileManager.default.fileExists(atPath: fileURL.path()) {
+                try FileManager.default.removeItem(at: fileURL)
+            }
+            
+            let database = try WWSQLite3Manager.shared.connect(fileURL: fileURL)
+            
+            let demo = FTS5Demo(database: database)
+            let text1 = try demo.run()
+            let text2 = try demo.testUpdateAndDelete()
+            
+            resultLabel.text = "\([text1, text2].flatMap { $0 }))"
+            
+            try database.close()
             
         } catch {
             print(error)

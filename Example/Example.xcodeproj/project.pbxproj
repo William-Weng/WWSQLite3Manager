@@ -12,6 +12,7 @@
 		3DBCD87B26F198EF00522E3B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3DBCD87926F198EF00522E3B /* Main.storyboard */; };
 		3DBCD87D26F198F300522E3B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3DBCD87C26F198F300522E3B /* Assets.xcassets */; };
 		3DBCD88026F198F300522E3B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3DBCD87E26F198F300522E3B /* LaunchScreen.storyboard */; };
+		810BB1C52FC8414C009F9856 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 810BB1C42FC8414C009F9856 /* WWSQLite3Manager */; };
 		810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 810D14E92DE4107200FC4564 /* WWSQLite3Manager */; };
 		811F0C872FC552F500E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C862FC552F500E42052 /* WWSQLite3Manager */; };
 		811F0C8D2FC5720800E42052 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 811F0C8C2FC5720800E42052 /* WWSQLite3Manager */; };
@@ -20,11 +21,11 @@
 		81696EBC2FC68A30004DE50B /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81696EBB2FC68A30004DE50B /* WWSQLite3Manager */; };
 		817EC85D2FBDA5D500598880 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 817EC85C2FBDA5D500598880 /* WWSQLite3Manager */; };
 		818304912FC69F1300C84899 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 818304902FC69F1300C84899 /* WWSQLite3Manager */; };
-		818304942FC69F4F00C84899 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 818304932FC69F4F00C84899 /* WWSQLite3Manager */; };
 		819D96A12791193B000CFB51 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819D96A02791193B000CFB51 /* Model.swift */; };
 		819D96A327911962000CFB51 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819D96A227911962000CFB51 /* Extension.swift */; };
 		81A6C2ED2FC5977C00859B24 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81A6C2EC2FC5977C00859B24 /* WWSQLite3Manager */; };
 		81DF9C262FC590CF00734CDF /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81DF9C252FC590CF00734CDF /* WWSQLite3Manager */; };
+		81E174A82FC9268000F90484 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81E174A72FC9268000F90484 /* WWSQLite3Manager */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,8 +51,9 @@
 				81696EBC2FC68A30004DE50B /* WWSQLite3Manager in Frameworks */,
 				81DF9C262FC590CF00734CDF /* WWSQLite3Manager in Frameworks */,
 				811F0C872FC552F500E42052 /* WWSQLite3Manager in Frameworks */,
-				818304942FC69F4F00C84899 /* WWSQLite3Manager in Frameworks */,
+				810BB1C52FC8414C009F9856 /* WWSQLite3Manager in Frameworks */,
 				811F0C8D2FC5720800E42052 /* WWSQLite3Manager in Frameworks */,
+				81E174A82FC9268000F90484 /* WWSQLite3Manager in Frameworks */,
 				81A6C2ED2FC5977C00859B24 /* WWSQLite3Manager in Frameworks */,
 				818304912FC69F1300C84899 /* WWSQLite3Manager in Frameworks */,
 				810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */,
@@ -167,7 +169,8 @@
 				81A6C2EC2FC5977C00859B24 /* WWSQLite3Manager */,
 				81696EBB2FC68A30004DE50B /* WWSQLite3Manager */,
 				818304902FC69F1300C84899 /* WWSQLite3Manager */,
-				818304932FC69F4F00C84899 /* WWSQLite3Manager */,
+				810BB1C42FC8414C009F9856 /* WWSQLite3Manager */,
+				81E174A72FC9268000F90484 /* WWSQLite3Manager */,
 			);
 			productName = Example;
 			productReference = 3DBCD87026F198EF00522E3B /* Example.app */;
@@ -198,7 +201,7 @@
 			);
 			mainGroup = 3DBCD86726F198EF00522E3B;
 			packageReferences = (
-				818304922FC69F4F00C84899 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
+				81E174A62FC9268000F90484 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
 			);
 			productRefGroup = 3DBCD87126F198EF00522E3B /* Products */;
 			projectDirPath = "";
@@ -452,17 +455,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		818304922FC69F4F00C84899 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
+		81E174A62FC9268000F90484 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/William-Weng/WWSQLite3Manager";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.2.2;
+				minimumVersion = 2.3.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		810BB1C42FC8414C009F9856 /* WWSQLite3Manager */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WWSQLite3Manager;
+		};
 		810D14E92DE4107200FC4564 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
@@ -487,17 +494,17 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
 		};
-		818304932FC69F4F00C84899 /* WWSQLite3Manager */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 818304922FC69F4F00C84899 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
-			productName = WWSQLite3Manager;
-		};
 		81A6C2EC2FC5977C00859B24 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
 		};
 		81DF9C252FC590CF00734CDF /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = WWSQLite3Manager;
+		};
+		81E174A72FC9268000F90484 /* WWSQLite3Manager */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81E174A62FC9268000F90484 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
 			productName = WWSQLite3Manager;
 		};
 /* End XCSwiftPackageProductDependency section */

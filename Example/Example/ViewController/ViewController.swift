@@ -24,10 +24,10 @@ final class ViewController: UIViewController {
             
             try database.drop(tableName: tableName, ifExists: true)
             try database.create(tableName: tableName, type: Student.self, ifNotExists: true)
-            
+                        
             let items: [WWSQLite3Manager.InsertItem] = [
-                (key: "name", value: "William.Weng"),
-                (key: "height", value: 180.87),
+                (key: "name", value: .string("William.Weng")),
+                (key: "height", value: .double(180.87)),
             ]
             
             let `where`: WWSQLite3Manager.Where = .init()

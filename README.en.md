@@ -8,11 +8,13 @@
 
 [English](./README.en.md) | [繁體中文](./README.md)
 
+https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
+
+---
+
 ## 🎉 Overview
 
 A lightweight SQLite3 helper for Swift that makes schema definition, CRUD, conditional queries, and aggregate selection easier to read and maintain.
-
-https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
 
 ---
 
@@ -42,7 +44,7 @@ One of the package's key design ideas is to separate table schema definition fro
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.2.2"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.3.0"))
 ]
 ```
 
@@ -54,10 +56,13 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 
 ## 🛠️ Public APIs
 
-| API | Description |
+| API (WWSQLite3Manager) | Description |
 |---|---|
 | `connect(fileURL:)` | Create a SQLite connection. |
 | `connect(for:filename:)` | Create a SQLite connection with a target location and filename. |
+
+| API (Database) | Description |
+|---|---|
 | `execute(sql:)` | Execute raw SQL directly. |
 | `prepare(sql:)` | Prepare and execute SQL statements. |
 | `select(sql:result:completion:)` | Execute a raw `SELECT` query. |
@@ -116,9 +121,6 @@ extension Student: WWSQLite3Manager.SchemeDelegate {
 ### 2. Connect, create, insert, and query
 
 ```swift
-import UIKit
-import WWSQLite3Manager
-
 final class ViewController: UIViewController {
     
     @IBOutlet weak var sqlLabel: UILabel!
@@ -137,8 +139,8 @@ final class ViewController: UIViewController {
             try database.create(tableName: tableName, type: Student.self, ifNotExists: true)
             
             let items: [WWSQLite3Manager.InsertItem] = [
-                (key: "name", value: "William.Weng"),
-                (key: "height", value: 180.87),
+                (key: "name", value: .string("William.Weng")),
+                (key: "height", value: .double(180.87)),
             ]
             
             let `where`: WWSQLite3Manager.Where = .init()
@@ -158,7 +160,45 @@ final class ViewController: UIViewController {
 }
 ```
 
-The original README already demonstrates connection, table creation, insert, and schema-based selection in this style.
+### 3. FTS5 query functionality
+
+```swift
+import UIKit
+import WWSQLite3Manager
+
+final class FTS5ViewController: UIViewController {
+    
+    @IBOutlet weak var resultLabel: UILabel!
+    
+    private let filename = "fts5.db"
+    
+    override func viewDidLoad() {
+        
+        super.viewDidLoad()
+        
+        do {
+            let fileURL = URL.documentsDirectory.appendingPathComponent(filename)
+                        
+            if FileManager.default.fileExists(atPath: fileURL.path()) {
+                try FileManager.default.removeItem(at: fileURL)
+            }
+            
+            let database = try WWSQLite3Manager.shared.connect(fileURL: fileURL)
+            
+            let demo = FTS5Demo(database: database)
+            let text1 = try demo.run()
+            let text2 = try demo.testUpdateAndDelete()
+            
+            resultLabel.text = "\([text1, text2].flatMap { $0 }))"
+            
+            try database.close()
+            
+        } catch {
+            print(error)
+        }
+    }
+}
+```
 
 ---
 

@@ -47,7 +47,7 @@ public extension WWSQLite3Manager.Database {
         var statement: OpaquePointer? = nil
         defer { sqlite3_finalize(statement) }
         
-        let prepareCode = sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        let prepareCode = sql.withCString { cString in sqlite3_prepare_v3(database, cString, -1, 0, &statement, nil) }
         guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
         
         let stepCode = sqlite3_step(statement)
@@ -301,20 +301,42 @@ public extension WWSQLite3Manager.Database {
         guard let firstItems = itemsArray.first, !firstItems.isEmpty else { throw WWSQLite3Manager.CustomError.missingItems }
         
         let baseKeys = firstItems.map(\.key)
-        let keys = baseKeys.joined(separator: ", ")
         
         for items in itemsArray {
             let currentKeys = items.map(\.key)
             guard currentKeys == baseKeys else { throw WWSQLite3Manager.CustomError.missingItems }
         }
         
-        let values = itemsArray.map { items -> String in
-            let valueString = items.map { sqlValue($0.value) }.joined(separator: ", ")
-            return "(\(valueString))"
-        }.joined(separator: ", ")
+        let keys = baseKeys.joined(separator: ", ")
+        let placeholders = "(" + Array(repeating: "?", count: baseKeys.count).joined(separator: ", ") + ")"
+        let valuesSQL = Array(repeating: placeholders, count: itemsArray.count).joined(separator: ", ")
+        let sql = "INSERT INTO \(tableName) (\(keys)) VALUES \(valuesSQL)"
         
-        let sql = "INSERT INTO \(tableName) (\(keys)) VALUES \(values)"
-        try prepare(sql: sql)
+        var statement: OpaquePointer?
+        
+        let prepareCode = sql.withCString { cString in sqlite3_prepare_v3(database, cString, -1, 0, &statement, nil) }
+        guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
+        
+        defer { sqlite3_finalize(statement) }
+        
+        let transient = unsafeBitCast(OpaquePointer(bitPattern: -1), to: sqlite3_destructor_type.self)
+        let dateFormatter = defaultDateFormatter()
+        
+        var bindIndex: Int32 = 1
+        
+        for items in itemsArray {
+            
+            for item in items {
+                
+                guard let statement else { throw makeError(.prepare, code: SQLITE_MISUSE) }
+                
+                try bindValue(item.value, to: statement, index: bindIndex, transient: transient, dateFormatter: dateFormatter)
+                bindIndex += 1
+            }
+        }
+        
+        let stepCode = sqlite3_step(statement)
+        guard stepCode == SQLITE_DONE else { throw makeError(.execute, code: stepCode) }
         
         return sql
     }
@@ -644,15 +666,58 @@ private extension WWSQLite3Manager.Database {
         }
     }
     
-    /// 建立 SQLite 錯誤
+    /// 將 Swift 型別封裝的 InsertValue 綁定到 SQLite prepared statement 的指定 index
+    ///
     /// - Parameters:
-    ///   - operation: 發生錯誤的 SQLite 操作階段。
-    ///   - code: SQLite 回傳的錯誤碼。
-    /// - Returns: `WWSQLite3Manager.CustomError`
-    func makeError(_ operation: WWSQLite3Manager.Operation, code: Int32) -> WWSQLite3Manager.CustomError {
+    ///   - value: 要綁定的值（enum 包裝，對應 SQLite 支援型別）
+    ///   - statement: SQLite prepared statement (sqlite3_stmt *)
+    ///   - index: 欄位索引（從 1 開始）
+    ///   - transient: SQLite destructor，用來指定資料生命週期（通常使用 SQLITE_TRANSIENT）
+    ///   - dateFormatter: Date → String 的格式轉換器
+    ///
+    /// - Throws: 當 sqlite3_bind_* 回傳非 SQLITE_OK 時拋出錯誤
+    func bindValue(_ value: WWSQLite3Manager.InsertValue, to statement: OpaquePointer, index: Int32, transient: sqlite3_destructor_type, dateFormatter: DateFormatter) throws {
         
-        let message = sqlite3_errmsg(database).flatMap { String(cString: $0) } ?? "No SQLite error message."
-        return .sqlite(operation: operation, code: code, message: message)
+        let result: Int32
+        
+        switch value {
+        case .null: result = sqlite3_bind_null(statement, index)
+        case .string(let text): result = text.withCString { sqlite3_bind_text(statement, index, $0, -1, transient) }
+        case .int(let number): result = sqlite3_bind_int64(statement, index, number)
+        case .double(let number): result = sqlite3_bind_double(statement, index, number)
+        case .bool(let flag): result = sqlite3_bind_int(statement, index, flag ? 1 : 0)
+        case .data(let data):
+            result = data.withUnsafeBytes { buffer in
+                guard let baseAddress = buffer.baseAddress else { return sqlite3_bind_null(statement, index) }
+                return sqlite3_bind_blob(statement, index, baseAddress, Int32(buffer.count), transient)
+            }
+        case .date(let date):
+            let text = dateFormatter.string(from: date)
+            result = text.withCString { sqlite3_bind_text(statement, index, $0, -1, transient) }
+        }
+        
+        guard result == SQLITE_OK else { throw makeError(.execute, code: result) }
+    }
+    
+    /// 建立預設的 DateFormatter（用於 SQLite 儲存 Date）
+    ///
+    /// 設計重點：
+    /// - 使用固定格式避免 locale 影響
+    /// - 使用 UTC（GMT+0）確保跨時區一致
+    /// - 使用 POSIX locale 避免 12/24 小時或地區差異
+    ///
+    /// 格式：yyyy-MM-dd HH:mm:ss ZZZ
+    /// 範例：2026-05-29 01:30:00 +0000
+    func defaultDateFormatter() -> DateFormatter {
+        
+        let formatter = DateFormatter()
+        
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZ"
+        
+        return formatter
     }
     
     /// 讀取目前 statement 所在的一列資料，並轉成 SQLiteRow。
@@ -669,7 +734,7 @@ private extension WWSQLite3Manager.Database {
             
             let name = String(cString: sqlite3_column_name(statement, index))
             let type = sqlite3_column_type(statement, index)
-
+            
             switch type {
             case SQLITE_INTEGER: row[name] = sqlite3_column_int64(statement, index)
             case SQLITE_FLOAT: row[name] = sqlite3_column_double(statement, index)
@@ -681,5 +746,16 @@ private extension WWSQLite3Manager.Database {
         }
 
         return row
+    }
+    
+    /// 建立 SQLite 錯誤
+    /// - Parameters:
+    ///   - operation: 發生錯誤的 SQLite 操作階段。
+    ///   - code: SQLite 回傳的錯誤碼。
+    /// - Returns: `WWSQLite3Manager.CustomError`
+    func makeError(_ operation: WWSQLite3Manager.Operation, code: Int32) -> WWSQLite3Manager.CustomError {
+        
+        let message = sqlite3_errmsg(database).flatMap { String(cString: $0) } ?? "No SQLite error message."
+        return .sqlite(operation: operation, code: code, message: message)
     }
 }

@@ -66,18 +66,18 @@ private extension FTS5Demo {
     func seedData() throws {
         
         let item0: [WWSQLite3Manager.InsertItem] = [
-            (key: "title", value: "Swift SQLite FTS5"),
-            (key: "body", value: "This demo shows full text search (検索) with highlight and snippet."),
+            (key: "title", value: .string("Swift SQLite FTS5")),
+            (key: "body", value: .string("This demo shows full text search (検索) with highlight and snippet.")),
         ]
         
         let item1: [WWSQLite3Manager.InsertItem] = [
-            (key: "title", value: "CoreBluetooth Notes"),
-            (key: "body", value: "Bluetooth (藍牙) data parsing and fast local search."),
+            (key: "title", value: .string("CoreBluetooth Notes")),
+            (key: "body", value: .string("Bluetooth (藍牙) data parsing and fast local search.")),
         ]
         
         let item2: [WWSQLite3Manager.InsertItem] = [
-            (key: "title", value: "Retro Game Tools"),
-            (key: "body", value: "Search game metadata with SQLite FTS5."),
+            (key: "title", value: .string("Retro Game Tools")),
+            (key: "body", value: .string("Search game metadata with SQLite FTS5.")),
         ]
         
         try database.insert(tableName: tableName, itemsArray: [item0, item1, item2])
