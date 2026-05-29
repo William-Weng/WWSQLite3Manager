@@ -6,13 +6,9 @@
 [![Swift Package Manager-SUCCESS](https://img.shields.io/badge/Swift_Package_Manager-SUCCESS-blue.svg?style=flat)](https://developer.apple.com/swift/)
 [![LICENSE](https://img.shields.io/badge/LICENSE-MIT-yellow.svg?style=flat)](https://developer.apple.com/swift/)
 
----
+[English](./README.en.md) | [繁體中文](./README.md)
 
 https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
-
----
-
-[English](./README.en.md) | [繁體中文](./README.md)
 
 ---
 
