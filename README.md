@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.3.0"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.3.1"))
 ]
 ```
 

@@ -81,6 +81,18 @@ public extension WWSQLite3Manager {
         case null                                                           // 空值 (NULL)
     }
     
+    /// 表示可插入資料庫（如 SQLite）的欄位值型別
+    enum InsertValue {
+        
+        case null                                                           // 空值（對應 SQL NULL）
+        case string(String)                                                 // 字串（對應 TEXT）
+        case int(Int64)                                                     // 64-bit 整數（對應 INTEGER）
+        case double(Double)                                                 // 雙精度浮點數（對應 REAL）
+        case bool(Bool)                                                     // 布林值（通常轉為 0 / 1 存為 INTEGER）
+        case data(Data)                                                     // 二進位資料（對應 BLOB）
+        case date(Date)                                                     // 日期型別 => timeIntervalSince1970（Double / REAL） / Unix timestamp（Int / INTEGER）/ ISO8601 字串（TEXT）
+    }
+    
     /// 排序 => 小到大 / 大到小
     enum OrderByType {
         

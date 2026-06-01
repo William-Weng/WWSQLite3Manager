@@ -20,16 +20,3 @@ public extension WWSQLite3Manager {
     typealias CompareValue = (key: String, symbol: String, value: Any)          // 表示一個比較條件的三元素 (欄位名稱, 比較運算子字串, 比較值)
     typealias OrderType = (key: String, direction: SortDirection)               // 表示一個排序規則 (欄位名稱, 排序類型)
 }
-
-public extension WWSQLite3Manager {
-    
-    enum InsertValue {
-        case null
-        case string(String)
-        case int(Int64)
-        case double(Double)
-        case bool(Bool)
-        case data(Data)
-        case date(Date)
-    }
-}
