@@ -44,7 +44,7 @@ One of the package's key design ideas is to separate table schema definition fro
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.3.1"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.0"))
 ]
 ```
 

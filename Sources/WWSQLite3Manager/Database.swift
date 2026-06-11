@@ -362,7 +362,7 @@ public extension WWSQLite3Manager.Database {
     func update(tableName: String, items: [WWSQLite3Manager.InsertItem], where whereConditions: WWSQLite3Manager.Where? = nil) throws -> String {
         
         guard !items.isEmpty else { throw WWSQLite3Manager.CustomError.missingItems }
-        
+                
         let assignments = items.map { "\($0.key) = \(sqlValue($0.value))" }.joined(separator: ", ")
         var sql = "UPDATE \(tableName) SET \(assignments)"
         
@@ -628,41 +628,21 @@ private extension WWSQLite3Manager.Database {
     /// 將值轉成 SQLite 可用的字串
     /// - Parameter value: 任意型別的欄位值
     /// - Returns: 可直接拼接到 SQL 的字串
-    func sqlValue(_ value: Any?) -> String {
+    /// 將值轉成 SQLite 可用的字串
+    /// - Parameter value: 任意型別的欄位值
+    /// - Returns: 可直接拼接到 SQL 的字串
+    func sqlValue(_ value: WWSQLite3Manager.InsertValue?) -> String {
         
         guard let value else { return "NULL" }
         
         switch value {
-        
-        /* Bool */
-        case let bool as Bool: return bool ? "1" : "0"
-            
-        /* SignedInteger */
-        case let number as Int: return "\(number)"
-        case let number as Int8: return "\(number)"
-        case let number as Int16: return "\(number)"
-        case let number as Int32: return "\(number)"
-        case let number as Int64: return "\(number)"
-            
-        /* UnsignedInteger */
-        case let number as UInt: return "\(number)"
-        case let number as UInt8: return "\(number)"
-        case let number as UInt16: return "\(number)"
-        case let number as UInt32: return "\(number)"
-        case let number as UInt64: return "\(number)"
-            
-        /* BinaryFloatingPoint */
-        case let number as Float: return "\(number)"
-        case let number as Double: return "\(number)"
-            
-        /* String */
-        case let text as String:
-            let escaped = text.replacingOccurrences(of: "'", with: "''")
-            return "'\(escaped)'"
-            
-        default:
-            let escaped = "\(value)".replacingOccurrences(of: "'", with: "''")
-            return "'\(escaped)'"
+        case .null: return "NULL"
+        case .int(let int): return "\(int)"
+        case .double(let double): return "\(double)"
+        case .bool(let bool): return bool ? "1" : "0"
+        case .date(let date): return "\(date.timeIntervalSince1970)"
+        case .string(let string): let escaped = string.replacingOccurrences(of: "'", with: "\'"); return "'\(escaped)'"
+        case .data(let data): let hex = data.map { String(format: "%02X", $0) }.joined(); return "X'\(hex)'"
         }
     }
     
