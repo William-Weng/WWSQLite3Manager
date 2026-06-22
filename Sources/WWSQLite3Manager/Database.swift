@@ -102,6 +102,13 @@ public extension WWSQLite3Manager.Database {
         return tableInformation(tableName: tableName, type: WWSQLite3Manager.TableScheme.self)
     }
     
+    /// 取得全資料表資訊
+    /// - Returns: SelectResult
+    func tables() -> WWSQLite3Manager.SelectResult {
+        let `where`: WWSQLite3Manager.Where = .init().compare("type", .equal, .text("table"))
+        return select(tableName: "sqlite_master", type: WWSQLite3Manager.SqliteMaster.self, where: `where`)
+    }
+    
     /// [建立資料表](https://www.sqlitetutorial.net/sqlite-create-table/)
     /// - CREATE TABLE IF NOT EXISTS "students" ("id" INTEGER DEFAULT 1, "name" TEXT, "height" REAL, "image" BLOB, "time" TEXT, PRIMARY KEY ("id"))
     /// - Parameters:

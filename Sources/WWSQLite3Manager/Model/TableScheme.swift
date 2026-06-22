@@ -10,7 +10,8 @@ import UIKit
 // MARK: - TableScheme
 extension WWSQLite3Manager {
     
-    class TableScheme: Codable, WWSQLite3Manager.SchemeDelegate {
+    /// Table的結構組成
+    class TableScheme: Codable {
         
         let cid: Int
         let name: String
@@ -33,7 +34,7 @@ extension WWSQLite3Manager {
 }
 
 // MARK: - SQLite3TableScheme
-extension WWSQLite3Manager.TableScheme {
+extension WWSQLite3Manager.TableScheme: WWSQLite3Manager.SchemeDelegate {
     
     /// [SQL欄位順序結構 => CREATE時使用](https://jjeremy-xue.medium.com/swift-說說-codable-decodable-encodable-594b28ff3d49)
     /// - Returns: [SelectColumn]

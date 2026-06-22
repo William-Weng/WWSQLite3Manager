@@ -44,7 +44,7 @@ One of the package's key design ideas is to separate table schema definition fro
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.0"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.1"))
 ]
 ```
 
@@ -68,6 +68,7 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 | `select(sql:result:completion:)` | Execute a raw `SELECT` query. |
 | `close()` | Close the current SQLite connection. |
 | `scheme(tableName:)` | Read the schema information of a table. |
+| `tables` | Get all table informations. |
 | `create(tableName:type:primaryKeys:ifNotExists:)` | Create a table from a schema definition. |
 | `drop(tableName:ifExists:)` | Drop a table. |
 | `transaction(type:)` | Execute SQL in a transaction scope. |
