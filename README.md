@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/4b604592-2895-4552-9c5a-1e2cb57d5b77
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.3"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.4"))
 ]
 ```
 
@@ -63,7 +63,8 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 |---|---|
 | `execute(sql:)` | 直接執行原生 SQL。 |
 | `prepare(sql:)` | 預備並執行 SQL 語句。 |
-| `query(sql:result:completion:)` | 執行原生 `SELECT` 查詢。 |
+| `query(sql:result:)` | 執行原生 `SELECT` 查詢。 |
+| `query(sql:)` | 執行原生 `SELECT` 查詢。 |
 | `close()` | 關閉目前的 SQLite 連線。 |
 | `scheme(tableName:)` | 讀取指定資料表的結構資訊。 |
 | `tables` | 取得全資料表資訊。 |

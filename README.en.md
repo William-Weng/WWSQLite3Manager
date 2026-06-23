@@ -44,7 +44,7 @@ One of the package's key design ideas is to separate table schema definition fro
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.3"))
+    .package(url: "https://github.com/William-Weng/WWSQLite3Manager.git", .upToNextMajor(from: "2.4.4"))
 ]
 ```
 
@@ -65,7 +65,8 @@ https://github.com/William-Weng/WWSQLite3Manager.git
 |---|---|
 | `execute(sql:)` | Execute raw SQL directly. |
 | `prepare(sql:)` | Prepare and execute SQL statements. |
-| `select(sql:result:completion:)` | Execute a raw `SELECT` query. |
+| `query(sql:result:)` | Execute a raw `SELECT` query. |
+| `query(sql:)` | Execute a raw `SELECT` query. |
 | `close()` | Close the current SQLite connection. |
 | `scheme(tableName:)` | Read the schema information of a table. |
 | `tables` | Get all table informations. |

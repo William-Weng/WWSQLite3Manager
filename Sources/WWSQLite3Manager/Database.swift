@@ -82,6 +82,31 @@ public extension WWSQLite3Manager.Database {
         }
     }
     
+    ///  query(sql:result:) 的處理完成版本
+    /// - Parameter sql: String
+    /// - Returns: [WWSQLite3Manager.SQLiteRow]
+    func query(sql: String) throws -> [WWSQLite3Manager.SQLiteRow] {
+        
+        var statement: OpaquePointer? = nil
+        defer { sqlite3_finalize(statement) }
+        
+        let prepareCode = sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
+        guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
+
+        var rows: [WWSQLite3Manager.SQLiteRow] = []
+
+        while true {
+            
+            let stepCode = sqlite3_step(statement)
+
+            switch stepCode {
+            case SQLITE_ROW: rows.append(readRow(statement))
+            case SQLITE_DONE: return rows
+            default: throw makeError(.step, code: stepCode)
+            }
+        }
+    }
+    
     /// [關閉SQLite連線](https://www.sqlite.org/c3ref/close.html)
     /// - Throws: CustomError
     func close() throws {
@@ -492,35 +517,6 @@ public extension WWSQLite3Manager.Database {
             return array
             
         }, where: whereConditions, groupBy: groupByConditions, having: havingConditions, orderBy: orderByConditions, limit: limitConditions)
-    }
-}
-
-// MARK: - 小工具
-extension WWSQLite3Manager.Database {
-    
-    ///  query(sql:result:) 的 async 版本
-    /// - Parameter sql: String
-    /// - Returns: [WWSQLite3Manager.SQLiteRow]
-    func query(sql: String) throws -> [WWSQLite3Manager.SQLiteRow] {
-        
-        var statement: OpaquePointer? = nil
-        defer { sqlite3_finalize(statement) }
-        
-        let prepareCode = sqlite3_prepare_v3(database, sql.cString(using: .utf8), -1, 0, &statement, nil)
-        guard prepareCode == SQLITE_OK else { throw makeError(.prepare, code: prepareCode) }
-
-        var rows: [WWSQLite3Manager.SQLiteRow] = []
-
-        while true {
-            
-            let stepCode = sqlite3_step(statement)
-
-            switch stepCode {
-            case SQLITE_ROW: rows.append(readRow(statement))
-            case SQLITE_DONE: return rows
-            default: throw makeError(.step, code: stepCode)
-            }
-        }
     }
 }
 

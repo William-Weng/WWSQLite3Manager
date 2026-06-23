@@ -21,7 +21,8 @@
 		814731AF2FDABA34001DAF0F /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 814731AE2FDABA34001DAF0F /* WWSQLite3Manager */; };
 		81637FAC2FEA355300028503 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81637FAB2FEA355300028503 /* WWSQLite3Manager */; };
 		81637FB22FEA38E900028503 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81637FB12FEA38E900028503 /* WWSQLite3Manager */; };
-		81637FB52FEA395200028503 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81637FB42FEA395200028503 /* WWSQLite3Manager */; };
+		81637FB82FEA585400028503 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81637FB72FEA585400028503 /* WWSQLite3Manager */; };
+		81637FBB2FEA592900028503 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81637FBA2FEA592900028503 /* WWSQLite3Manager */; };
 		81696EBC2FC68A30004DE50B /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 81696EBB2FC68A30004DE50B /* WWSQLite3Manager */; };
 		817EC85D2FBDA5D500598880 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 817EC85C2FBDA5D500598880 /* WWSQLite3Manager */; };
 		818304912FC69F1300C84899 /* WWSQLite3Manager in Frameworks */ = {isa = PBXBuildFile; productRef = 818304902FC69F1300C84899 /* WWSQLite3Manager */; };
@@ -67,8 +68,9 @@
 				814731AF2FDABA34001DAF0F /* WWSQLite3Manager in Frameworks */,
 				819988CF2FE8CBC9001923FE /* WWSQLite3Manager in Frameworks */,
 				819988D52FE8CEEF001923FE /* WWSQLite3Manager in Frameworks */,
-				81637FB52FEA395200028503 /* WWSQLite3Manager in Frameworks */,
+				81637FB82FEA585400028503 /* WWSQLite3Manager in Frameworks */,
 				810D14EA2DE4107200FC4564 /* WWSQLite3Manager in Frameworks */,
+				81637FBB2FEA592900028503 /* WWSQLite3Manager in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,7 +190,8 @@
 				819988D42FE8CEEF001923FE /* WWSQLite3Manager */,
 				81637FAB2FEA355300028503 /* WWSQLite3Manager */,
 				81637FB12FEA38E900028503 /* WWSQLite3Manager */,
-				81637FB42FEA395200028503 /* WWSQLite3Manager */,
+				81637FB72FEA585400028503 /* WWSQLite3Manager */,
+				81637FBA2FEA592900028503 /* WWSQLite3Manager */,
 			);
 			productName = Example;
 			productReference = 3DBCD87026F198EF00522E3B /* Example.app */;
@@ -219,7 +222,7 @@
 			);
 			mainGroup = 3DBCD86726F198EF00522E3B;
 			packageReferences = (
-				81637FB32FEA395200028503 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
+				81637FB92FEA592900028503 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */,
 			);
 			productRefGroup = 3DBCD87126F198EF00522E3B /* Products */;
 			projectDirPath = "";
@@ -410,7 +413,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = Example/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -433,7 +436,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = Example/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -473,12 +476,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		81637FB32FEA395200028503 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
+		81637FB92FEA592900028503 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/William-Weng/WWSQLite3Manager";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.4.2;
+				minimumVersion = 2.4.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -512,9 +515,13 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = WWSQLite3Manager;
 		};
-		81637FB42FEA395200028503 /* WWSQLite3Manager */ = {
+		81637FB72FEA585400028503 /* WWSQLite3Manager */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 81637FB32FEA395200028503 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
+			productName = WWSQLite3Manager;
+		};
+		81637FBA2FEA592900028503 /* WWSQLite3Manager */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81637FB92FEA592900028503 /* XCRemoteSwiftPackageReference "WWSQLite3Manager" */;
 			productName = WWSQLite3Manager;
 		};
 		81696EBB2FC68A30004DE50B /* WWSQLite3Manager */ = {
