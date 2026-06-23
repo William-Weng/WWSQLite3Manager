@@ -647,7 +647,7 @@ private extension WWSQLite3Manager.Database {
         case .int(let int): return "\(int)"
         case .double(let double): return "\(double)"
         case .bool(let bool): return bool ? "1" : "0"
-        case .date(let date): return defaultDateFormatter().string(from: date)
+        case .date(let date): return "'\(defaultDateFormatter().string(from: date))'"
         case .string(let string): let escaped = string.replacingOccurrences(of: "'", with: "\'"); return "'\(escaped)'"
         case .data(let data): let hex = data.map { String(format: "%02X", $0) }.joined(); return "X'\(hex)'"
         }
