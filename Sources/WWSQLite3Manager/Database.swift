@@ -641,13 +641,13 @@ private extension WWSQLite3Manager.Database {
     func sqlValue(_ value: WWSQLite3Manager.InsertValue?) -> String {
         
         guard let value else { return "NULL" }
-        
+                
         switch value {
         case .null: return "NULL"
         case .int(let int): return "\(int)"
         case .double(let double): return "\(double)"
         case .bool(let bool): return bool ? "1" : "0"
-        case .date(let date): return "\(date.timeIntervalSince1970)"
+        case .date(let date): return defaultDateFormatter().string(from: date)
         case .string(let string): let escaped = string.replacingOccurrences(of: "'", with: "\'"); return "'\(escaped)'"
         case .data(let data): let hex = data.map { String(format: "%02X", $0) }.joined(); return "X'\(hex)'"
         }
@@ -702,7 +702,7 @@ private extension WWSQLite3Manager.Database {
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZ"
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         
         return formatter
     }
